@@ -1,0 +1,18 @@
+{
+    "name" : "service_manager"
+    "properties" : {
+//	"type" : "object",
+//	"get_service" :
+//	"type" : "method",
+//	"parameters" : [],
+
+	"blin" : {
+	    "type" : "string",
+	    "required" : "true"
+	}
+	
+	"fig" : {
+	    "type" : "number"
+	}
+    }
+}

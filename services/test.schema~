@@ -1,0 +1,14 @@
+{
+    "name" : "test_schema",
+    "properties" : {
+	"type" : "object",
+	"blin" : {
+	    "type" : "string",
+	    "required" : "true"
+	}
+	
+	"fig" : {
+	    "type" : "number"
+	}
+    }
+}
