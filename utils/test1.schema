@@ -1,0 +1,20 @@
+{
+    "name" : "test_schema",
+    "properties" : {
+
+	"blin" : {
+	    "type" : "string",
+	    "required" : true,
+	    "pattern" : "^tvoyu"
+	},
+
+	"fig" : {
+	    "type" : "number"
+	},
+
+	"da" : {
+	    "type" : "boolean",
+	    "required" : false
+	}
+    }
+}
