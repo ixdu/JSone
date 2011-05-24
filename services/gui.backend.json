@@ -1,0 +1,49 @@
+{
+    "methods" : {
+	"update" : {
+	    "description" : "Вызывается, при каждом изменении дерева виджетов в gui",
+
+	    "parameters" : {
+		"path" : {
+		    "description" : "Указывает путь, относительно которого нужно произвести изменения. В формате что_то.где_то.почему_то",
+		    "type" : "string",
+		    "default" : ".",		    
+
+		    "required" : true
+		},
+		
+		"ui" : {
+		    "description" : "Содержит дерево элементов ui, которое должно быть вставлено в место, определённое путём",
+		    
+		    "$ref" : "data/gui/widgets.schema",
+		    
+		    "required" : true
+		}
+	    }
+	}
+    },
+
+    "signals" : {
+	"signal_emited" : {
+	    "description" : "Испускается, когда происходит действие над тем или иным элементом:)",
+
+	    "parameters" : {
+		"path" : {
+		    "description" : "Путь до элемента ui, который испустил сигнал. В том же формате, в котором указывается путь  в методе update",
+		    "type" : "string",
+		    
+		    "required" : true
+		},
+
+		"ui" : {
+		    "description" : "Дерево элементов ui, содержащих все необходимые данные, идущие с сигналом",
+
+		    "$ref" : "data/gui/widgets.schema",
+		    
+		    "required" : true
+		}
+	    }
+	}
+    }
+
+}
