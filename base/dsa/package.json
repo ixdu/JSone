@@ -1,0 +1,25 @@
+{
+    "name": "dsa",
+    "version": "0.1",
+    "author": "Nikita Zaharov aka ix",
+    "maintainers":[
+	{"name": "ix", "email": "ix@2du.ru"}],
+    "keywords": [
+	"broker",
+	"distribute",
+	"service"
+    ],
+
+    "licenses": [
+	{
+            "type": "AGPLv3",
+            "url": "http://www.gnu.org/licenses/agpl.html"
+	}
+    ],
+    "repository": {
+	"type":"git",
+	"url":"http://github.com/ixdu/dsa.git"
+    },
+    "main": "./dsa.js"
+}
+

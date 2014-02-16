@@ -1,0 +1,61 @@
+* Спецификация высокоуровневого, кросплатформенного compositor, он же dsa.ui.compositor
+
+**  Задача ui.compositor
+    Обеспечить достаточный уровень абстракции от низлежащего способа графического ввода-вывода, при этом требуя как можно меньше работы по реализации необходимых уровней абстракции.
+    Таким образом ui.compositor подходит как для минимального абстрагирования(например от канвасов работающих в framebuffer), так и для абстрагирования от уже сильно абстрагированных уровней(например html+css+javascript)
+
+* API
+  compositor представляет три вида апи, для работы с:
+  + объектами(создание, добавление, удаление)   
+    Работает со следующими типами объектов:
+    ++ frame
+    Некоторое подобие окна, в том виде, в котором оно представлено в x window system. Просто прямоугольная область, в которой размещаются другие объекты
+    ++ image
+    Изображение, в svg, png или jpeg форматах.
+
+  + анимацией(создание, привязка, запуск и остановка)
+    Реализуются следующие эффекты:
+    ++ resize
+    ++ move
+    ++ rotate
+    ++ colorset
+    
+  + получение событий(от мыши, клавиатуры, тачскрина или чего-либо ещё)
+    ++mouse_down
+    ++mouse_up
+    ++mouse_move
+
+    ++multi_down
+    ++multi_up
+    ++multi_move
+
+    ++key_down
+    ++key_up
+
+** objects
+   object = {
+      x,
+      y,
+      height,
+      width
+   }
+   id frame_create(parent_id, object)
+   void frame_destroy(id)
+   frame_add(frame_id, child_id)
+   frame_remove(parent_id, child_id)
+
+   id image_create(parent_id, object)
+   void image_destroy(id
+** animation
+   anim_id anim_create(chain)
+   void anim_destroy(anim_id)
+   void anim_bind(object_id, anim_id)
+   anim_unbind(object_id, anim_id)
+   void anim_start(object_id, anim_id)
+   void anim_stop(object_id, anim_id
+
+** events
+   event_register(object_id, event_name)
+   event_unregister(object_id, event_name)
+
+   event_signal(object_id,event_name, event_data)

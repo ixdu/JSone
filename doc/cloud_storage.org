@@ -1,0 +1,32 @@
+* Cloud Storage
+  это механизм абстрагирования от способа и места хранения объектов. Предоставляя один набор методов для доступа
+  к разным хранилищам.
+** cloud object
+   cloud_object_info " {
+     "type" : //может быть image, sound, video, text,
+     "backend" : // может быть tahoe_lafs, vkontakte, youtube, vimeo, dht_tahoe_lafs. Нназвание типа бэкенда, способного работать с этим объектом.
+     "link" : // желательно в ввиде URL, однако может содержать строку произвольного содержания, например UUID  
+   }
+
+** cloud storage api
+   co = cs.open(cloud_object_info);
+   cs.remove(cloud_object_info);
+   co = cs.clone(cloud_object_info);
+** cloud object api
+   URL = co.get_hfer();
+   co.write(offset, range, data);
+   co.read(offset, range, buffer);
+
+** backends
+*** tahoe_lafs
+*** youtube
+
+*** tahoe_lafs
+    function tahoe_lafs_co(type, uuid, entry){
+    }
+    tahoe_lafs_cs = function(co_info){
+    //пытаемся проверить есть ли такой объект вообще
+    }
+
+*** vkontakte
+    function vkontakte_co(type, uuid, en
