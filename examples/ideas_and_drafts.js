@@ -4,7 +4,8 @@ var canvas = {
     "in" : {
 //	""
 	"show" : function(client){
-	    frame = Compositer.frame_create();
+	    if(frame)
+		frame = Compositer.frame_create();
 	},
 	"hide" : function(client){
 	    for(elem in elements)

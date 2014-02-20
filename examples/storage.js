@@ -13,6 +13,22 @@ var storage = {
     }
 }
 
+// log structured merge
+function lsmer(){
+    //assemble data structure from log of data updating process
+    this.assemble = function(updating_tree){
+	return data;
+    }
+    //checking of correctness of updating_tree
+    this.verify = function(updating_tree){
+	return true;
+    }
+    //optimizing of updating tree for compact and reading speedups purpose
+    this.optimize = function(updating_tree){
+	return optimized_updating_tree;
+    }
+}
+
 function verify_contact(contact){
     //здесь должна быть проверка всех полей контакта на верность
     return null;
