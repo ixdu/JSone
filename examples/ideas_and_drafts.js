@@ -1,53 +1,10 @@
-var ui = {
-    "frame" : null,
-    "elements" : [],
-    "in" : {
-//	""
-	"show" : function(client){
-	    if(frame)
-		frame = Compositer.frame_create();
-	},
-	"hide" : function(client){
-	    for(elem in elements)
-		dsa.send(elements[elem].client, 'visible_changed', 'hidden');
-	    if(frame)
-		Compositer.change_prop(frame, { "opacity" : "100%" })
-	},
-	//elements messages
-	"give_element" : function(client){
-	    var element = {
-		"id" : uuid.generate_str(),
-		"client" : client,
-		"frame" : Compositer.frame_create()
-	    }
-	    elements.push(element);
-	    dsa.send(client, 'new_element', element.id);
-	},
-	"fill_element" : function(client, element, ui_item){
-	    //парсим тут дерево и реализуем разные элементы:)
-	},
-	"hide_element" : function(cleint, element){
-	}
-    },
-    "out" : {
-	//state is shown or hided
-	"visible_changed" : function(state){},
-	//for all visual elements
-	"new_element" : function(element){},
-	//for entry
-	"typed" : function(item, typed){},
-	//for button
-	"pressed" : function(item, state){}
-    }
-}
-
 var address_panel = {
     "_element" : '',
     "address" : '',
     "in" : {
 	"init" : function(){
 	    //просим выделения элемента у канваса
-	    dsa.send('ui', 'give_element');
+	    send('ui', 'give_element');
 	},
 	"visible_changed" : function(client, state){
 	    //важно что поверхности, они же element, отключаются ui рекурсивно, так что может и не надо будет ничего делать
@@ -58,28 +15,29 @@ var address_panel = {
 	    //старого и создания нового без нашего ведома:)
 	    _element = element;
 	    var ui_item = {
-		"type" : 'image',
-		"color" : 'white',
-		"childs" : {
-		    "address" :{
-			"type" : 'entry',
-			"color" : 'grey',
-				"x" : "3%",
-				"y" : "1%",
-				"width" : "75%",
-				"heigth" : "10%"
-		    },
-		    "gobutton" : {
-			"type" : 'button',
-			"color" : 'red',
-			"x" : "78%",
-			"y" : "1%",
-			"width" : "20%",
-			"heigth" : "10%"
+		"image" : {
+		    "color" : 'white',
+		    "childs" : {
+			"entry" : {
+			    "name" : 'address',
+			    "color" : 'grey',
+			    "x" : "3%",
+			    "y" : "1%",
+			    "width" : "75%",
+			    "heigth" : "10%"			    
+			},
+			"button" : {
+			    "name" : 'gobutton',
+			    "color" : 'red',
+			    "x" : "78%",
+			    "y" : "1%",
+			    "width" : "20%",
+			    "heigth" : "10%"
+			}		    
 		    }
 		}
 	    }
-	    dsa.send('ui', 'fill_element', element, ui_item);
+	    send('ui', 'fill_element', element, ui_item);
 	},
 	"typed" : function(client, item, typed){
 	    //когда набирают в entry, люди приходят сообщения с тем, что уже набрано. В дальнейшем можно
@@ -88,7 +46,7 @@ var address_panel = {
 	},
 	"pressed" : function(client, item, state){
 	    if(state == 'pressed')
-		dsa.send('sphere.ui.area_primary', 'open', address)
+		send('sphere.ui.area_primary', 'open', address)
 	}
     }
 }
@@ -102,7 +60,7 @@ var area = {
 	"init" : function(name){
 	    _name = name;
 	    //нужно регистрировать себя в соответствии с именем
-	    dsa.send('ui', 'give_element');
+	    send('ui', 'give_element');
 	},
 	"visible_changed" : function(client, state){
 	    //важно что поверхности, они же element, отключаются ui рекурсивно, так что может и не надо будет ничего делать
@@ -111,15 +69,15 @@ var area = {
 	"new_element" : function(client, element){
 	    _element = element;
 	    object = 'sphere.object.welcome';
-	    dsa.send('sphere.objects.welcome', 'take', element);
+	    send('sphere.objects.welcome', 'take', element);
 	},
 	"resize" : function(client){
 	  //изменяем размер либо до максимального либо до нормального, но только для primary  
 	},
 	"open" : function(client, address){
-	    dsa.send(object, 'release');
+	    send(object, 'release');
 	    _address = object = address;
-	    dsa.send(address, 'take', element);
+	    send(address, 'take', element);
 	}
     }    
 }
@@ -128,7 +86,7 @@ var action_panel = {
     "_element" : null,
     "in" : {
 	"init" : function(){
-	    dsa.send('ui', 'give_element');
+	    send('ui', 'give_element');
 	},
 	"visible_changed" : function(client, state){
 	    //важно что поверхности, они же element, отключаются ui рекурсивно, так что может и не надо будет ничего делать
@@ -166,19 +124,19 @@ var action_panel = {
 		    }
 		}
 	    }
-	    dsa.send('ui', 'fill_element', element, ui_item);	    
+	    send('ui', 'fill_element', element, ui_item);	    
 	},
 	"pressed" : function(client, item, state){
 	    if(state == 'pressed')
 		switch(item){
 		    case 'resize' :
-		    dsa.send('sphere.ui.area_primary', 'resize');
+		    send('sphere.ui.area_primary', 'resize');
 		    break;
 		    case 'edit' : 
-		    dsa.send('sphere.ui.area_primary', 'open', 'sphere.ui.editor');
+		    send('sphere.ui.area_primary', 'open', 'sphere.ui.editor');
 		    break;
 		    case 'create' :
-		    dsa.send('sphere.ui.area_primary', 'open', 'sphere.ui.editor_new');
+		    send('sphere.ui.area_primary', 'open', 'sphere.ui.editor_new');
 		    break;
 		}
 	}
@@ -195,14 +153,14 @@ var editor_new = {
 var sphere_ui = {
     "in" : {
 	"show" : function(){
-	    dsa.send('ui', 'show');
-	    dsa.send('sphere.ui.address_panel', 'init');
-	    dsa.send('sphere.ui.area', 'init', '_primary');
-	    dsa.send('sphere.ui.area', 'init', '_slave');
-	    dsa.send('sphere.ui.action_panel', 'init');
+	    send('ui', 'show');
+	    send('sphere.ui.address_panel', 'init');
+	    send('sphere.ui.area', 'init', '_primary');
+	    send('sphere.ui.area', 'init', '_slave');
+	    send('sphere.ui.action_panel', 'init');
 	},
 	"hide" : function(){
-	    dsa.send('ui', 'hide');
+	    send('ui', 'hide');
 	}	    
     }
 }
