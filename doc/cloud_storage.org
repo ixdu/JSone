@@ -9,18 +9,18 @@
    }
 
 ** cloud storage api
-   co = cs.open(cloud_object_info);
-   cs.remove(cloud_object_info);
-   co = cs.clone(cloud_object_info);
-** cloud object api
-   URL = co.get_hfer();
-   co.write(offset, range, data);
-   co.read(offset, range, buffer);
+   storage_info = cs.storage_info();
+   stat_object_info = cs.stat(object_info);
+   URL = cs.href(object_info;
+   cs.write(object_info, offset, length, data);
+   data = cs.read(object_info, offset, length);
+   new_object_info = cs.clone(object_info);
+   cs.remove(object_info);
 
 ** backends
 *** tahoe_lafs
 *** youtube
-
+    
 *** tahoe_lafs
     function tahoe_lafs_co(type, uuid, entry){
     }
