@@ -1,132 +1,51 @@
-function find_free_block_keepers(number_of_keepers){
-//наверное то, что должно быть здесь, должно слиться с событиями block_keeper. То есть каждый блокодержатель бы
-//переодически отправлял запросы другим блокодержателям о возможности ими разместить блоки или невозможности. Ну и удерживал у себя скажем 50-60 адресов блокодержателей на всякой пожарный  
+function backends_read(){
+    var backends = {
+    }
+    //читаем папку cloud_storage_backends и подгружаем бэкенды
+    return backends;
 }
 
-function block_keeper(send, react){
-    var blocks_info = [];
-    var keepers = [];
-    function write_block(block){
-	
-    }
-    function read_block(id){
-	
-    }
-    function try_block(id){
-	
-    }
+//возможно проверку надо осуществлять на стороне клиента
+function verify_object_info(){
+    return null;
+}
+
+exports.init = function(send, react){
+    var backends = backends_read();
     return {
 	"in" : {
-	    "init" : function(client){
-		//проверяем все ли хранители блоков на месте, если нет, то находим новых и даём им копии блоков
-		modules.timer.js.create(
-		    function(){
-			for(block in blocks_info){
-			    for(keeper in blocks_info[block][keepers]){
-				blocks_info[block][keepers][keeper].alive(blocks_info[block][keepers].id);
-			    }   
-			}
-			for(ind in keepers){
-//			    send(keepers[ind].can_take
-			}	
-		    }, 5000, true);
+	    "storage_info" : function(client){
+		send(client, 'storage_info', { "backends" : backends });	
 	    },
-	    "finalize" : function(client){
-		
+	    ///вероятно сообщения нужно просто перенаправлять backend'у, так как отвечать же он сам будет
+	    //но пока оставлю, просто чтобы визуально ориентироваться
+	    "stat" : function(client, object_info){
+		send(client, 'stat', backends[object_info.backend].info(object_info));
 	    },
-	    //если блок маленький, он может упаковываться в какой-то кусок, куда влазит.
-	    "take" : function(client, block, replicate, replicated_to){
-		write_block(block);
-		var keepers = find_free_block_keepers(max_block_replications);
-		var block_info = {
-		    "id" : block.id,
-		    "keepers" : []
-		}
-		for(ind in keepers){
-		    keepers[ind].take(block, true, keepers.join(THIS));
-		    block_info.keepers.push(keepers[ind].id);
-		}
-		//отлавливаем все сообщения от держателей, если кто-то не отвечает, находим ему замену
-		//и шлём блок ему
-	    },
-	    //при удалении блока из более большого блока, всем кипера большого блока отслывается сообщение об удалении для синхронизации
-	    "delete" : function(client, block_id){
-//		if(try_block(block_id))
-		    ///удалить у себя и другим послать уведомление
-	    },
-	    "alive" : function(client, block_id){
-		if(!try_block(block.id))
-		    send(client, 'dead', [block]);
-	    },
-	    
-	    "dead" : function(client, blocks){
-		var keepers = find_free_block_keepers(blocks.length());
-		for(ind in keepers){
-		    keepes[keeper].take(blocks[ind]);
-		}
-	    },
-	    "services_unreached" : function(client, message){
-		//тут проверяем не по душу ли это живых блоков проверка была, если по их, то ищём новых киперов
-	    }
+	    "href" : function(client, object_info){},
+	    "create" : function(client, object_info, offset, length){},
+	    "update" : function(client, object_info, offset, length, data){},
+	    "destroy" : function(client, object_info){}
+
+//пока оставляю закоментированным, но возможно клонирование не понадобится. В свете объединение data_object
+// и cloud_object уровней в один, нужно пересмотреть как делаться будут ранее предполагаемые легко пораждаемые
+// отслаиваемые копии деревьев
+//	    "clone" : function(client, object_info){
+//		//анализ поддержки бэкэндом клонирования, если нет, то просто идёт чтение и запись нового объекта
+//		dsa.send(client, 'clone', cloned_object_info);
+//	    }
 	},
 	"out" : {
-	    "dead" : function(block){
-		
-	    }
-	}
+	    "storage_info" : function(storage_info) {},
+	    //фактически эти сообщения отправляются backend'ом, но есть ещё вопросы вложенного посыла
+	    //сообщений сервисами и оформления сервисов и их работы в dsa, после решения которых может быть
+	    //и не нужно будет дублировать
+	    "stat" : function(object_info, stat){},
+	    "new_object" : function(object_info){},
+	    "href" : function(object_info, href){},
+	    "readed_data" : function(object_info, data){},
+//	    "clone" : function(object_info){} //object_info of new created object
+ 	}
     }
 }
 
-function make_blocks(data){
-
-}
-var max_block_replications = 10;
-var max_block_size = 5000;
-function storage(send, react){
-    return {
-	"in" : {
-	    "write" : function(data){
-		if(BIG){
-		    var keepers = find_free_block_keepers(BIG / max_block_size);
-		    var blocks = make_blocks(data); //block.id уникален для каждого блока, а значит можно по нему блок найти
-		    for (ind in keepers){
-			keepers[ind].take(blocks[ind]);
-			
-		    }		    
-		}
-	    }
-	},
-	"out" : {
-	}
-    }
-}
-
-function data_object(send, react){
-    return {
-	"in" : {
-	    "create" :function(data_tree){
-		var data = JSON.stringify(data_tree);
-		var id = modules.uuid.generate_str();
-		var keeper = find_free_block_keeper(data.length);
-		keeper.take({"data" : data, "id" : id}, true);
-	    },
-	    "update" : function(id,update_tree){
-		var data = JSON.stringify(update_tree);
-		var keeper = block_keeper.find_free(id,data.length);
-		keeper.take({"data" : data, "id" : id});
-	    },
-	    "destroy" : function(id){
-		var keeper = block_keeper.find_by_id(id);
-		keeper.delete(id);
-	    }
-	},
-	"out" : {
-	    "new_object" : function(id){}
-	}
-    }
-}
-
-/*
- * Необходимо объединение блочного и инкрементально-объектного уровней, не обязательно в один уровень, потому
- * что вопрос сжатия, разбиения и эффективного распределения мелкими блоками важен. Но нужно обдумать интеграцию
- */
