@@ -20,12 +20,22 @@ exports.init = function(send, react){
 	    ///вероятно сообщения нужно просто перенаправлять backend'у, так как отвечать же он сам будет
 	    //но пока оставлю, просто чтобы визуально ориентироваться
 	    "stat" : function(client, object_info){
-		send(client, 'stat', backends[object_info.backend].info(object_info));
+		send(client, 'stat', backends[object_info.backend].stat(object_info));
 	    },
-	    "href" : function(client, object_info){},
-	    "create" : function(client, object_info, offset, length){},
-	    "update" : function(client, object_info, offset, length, data){},
-	    "destroy" : function(client, object_info){}
+	    "href" : function(client, object_info){
+		send(client, 'href', backends[object_info.backend].href(object_info));
+	    },
+	    "create" : function(client, object_info, data_tree){
+		backends[object_info.backend].create(object_info, data_tree, pack_type);
+	    },
+	    "update" : function(client, object_info, update_tree){
+		backends[object_info.backend].update(object_info, update_tree);
+	    },
+	    "extract" : function(client, object_info, pattern_tree){
+		//продумать, как клиент будет получать извлекаемые данные
+		backends[object_info.backend].extract(object_info, pattern_tree);
+	    },
+	    "delete" : function(client, object_info){}
 
 //пока оставляю закоментированным, но возможно клонирование не понадобится. В свете объединение data_object
 // и cloud_object уровней в один, нужно пересмотреть как делаться будут ранее предполагаемые легко пораждаемые
