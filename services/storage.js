@@ -26,14 +26,14 @@ exports.init = function(send, react){
 		send(client, 'href', backends[object_info.backend].href(object_info));
 	    },
 	    "create" : function(client, object_info, data_tree){
-		backends[object_info.backend].create(object_info, data_tree, pack_type);
+		send(client, 'new_object', backends[object_info.backend].create(object_info, data_tree, pack_type);
 	    },
 	    "update" : function(client, object_info, update_tree){
 		backends[object_info.backend].update(object_info, update_tree);
 	    },
 	    "extract" : function(client, object_info, pattern_tree){
 		//продумать, как клиент будет получать извлекаемые данные
-		backends[object_info.backend].extract(object_info, pattern_tree);
+		send(client, 'readed_data', backends[object_info.backend].extract(object_info, pattern_tree);
 	    },
 	    "delete" : function(client, object_info){}
 
@@ -50,10 +50,10 @@ exports.init = function(send, react){
 	    //фактически эти сообщения отправляются backend'ом, но есть ещё вопросы вложенного посыла
 	    //сообщений сервисами и оформления сервисов и их работы в dsa, после решения которых может быть
 	    //и не нужно будет дублировать
-	    "stat" : function(object_info, stat){},
+	    "stat" : function(stat){},
 	    "new_object" : function(object_info){},
-	    "href" : function(object_info, href){},
-	    "readed_data" : function(object_info, data){},
+	    "href" : function(href){},
+	    "readed_data" : function(data){},
 //	    "clone" : function(object_info){} //object_info of new created object
  	}
     }

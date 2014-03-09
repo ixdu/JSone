@@ -1,3 +1,5 @@
+var comp = require('modules/Compositer.js');
+
 function create_tree(comp, frame, ui_tree){
     var obj_tree = {
     }
@@ -14,54 +16,72 @@ function create_tree(comp, frame, ui_tree){
     return obj_tree;
 }
 
-exports.init = function(send, react){
-    var frame = null,
-    elements = {};
+exports.ui = function(context, send, react, sequence){
+    react("init",
+	  function(next){
+	      context.set("elems", []);
+	  });
+    react("show_hide",
+	  function(next){
+	      var elems = context.get("elems");
 
-    return { 
-	"in" :{
-	    "show" : function(client){
-		if(frame)
-		    frame = Compositer.frame_create();
-	    },
-	    "hide" : function(client){
-		for(elem in elements)
-		    send(elements[elem].client, 'visible_changed', 'hidden');
-		if(frame)
-		    Compositer.change_prop(frame, { "opacity" : "100%" })
-	    },
-	    //elements messages
-	    "give_element" : function(client){
-		var element = {
-		    "id" : uuid.generate_str(),
-		    "client" : client,
-		    "frame" : Compositer.frame_create()
-		}
-		elements[element.id](element);
-		send(client, 'new_element', element.id);
-	    },
-	    //ui_tree - this is json definition of nested simple ui elements like buttons, entry, labels
-	    "fill_element" : function(client, element_id, ui_tree){
-		elements[element_id].tree = create_tree(comp, elements[element_id].frame, ui_tree);	
-		//парсим тут дерево и реализуем разные элементы:)
-	    },
-	    //ui_modificator is like ui_tree, but consist delete element for deleting exists elements. New
-	    // elements added to exists tree, exists elements changed
-	    "change_element" : function(client, element, ui_modificator){
-		
-	    },
-	    "hide_element" : function(cleint, element){
-	    }
-	},
-	"out" : {
-	    //state is shown or hided
-	    "visible_changed" : function(state){},
+	      if(context.get('visible') == true){
+		  context.set('visible', false);
+		  comp.change_prop(0, { "opacity" : "100%" });
+		  for(elem in elems)
+		      send(elems[elem].client, 'visible', 'true');
+	      }else{
+		  context.set('visible', true);
+		  comp.change_prop(0, {"opacity" : "0%"});		  
+		  for(elem in elems)
+		      send(elems[elem].client, 'visible', 'false');
+	      }
+	      
+	  });
+    
+    //elements messages
+    react("give_element",
+	  function(next, client){
+	      var elems = context.get("elems");
+	      var element = {
+		  "id" : uuid.generate_str(),
+		  "client" : back,
+		  "frame" : Compositer.frame_create()
+	      }
+	      elems[element.id] = element;
+	      context.set("elems", elems);
+	      next(element.id);
+	  });
+ 
+   //ui_tree - this is json definition of nested simple ui elements like buttons, entry, labels
+    react("fill_element",
+	  function(next, element_id, ui_tree){
+	      var elems = context.get("elems");
+	      elems[element_id].tree = create_tree(comp, elems[element_id].frame, ui_tree);
+	      context.set("elems", elems);
+	      //парсим тут дерево и реализуем разные элементы:)
+	  });
+	   
+    //ui_modificator is like ui_tree, but consist delete element for deleting exists elements. New
+    // elements added to exists tree, exists elements changed
+    react("change_element",
+	  function(next, element_id, ui_modificator){
+	      
+	  });
+    
+    react("hide_element",
+	  function(next, element_id){
+	  });
+
+/*	"out" : {
 	    //for all visual elements
-	    "new_element" : function(element){},
+	    //state is shown or hided
+	    "visible" : function(state){},
 	    //for entry
 	    "typed" : function(item, typed){},
 	    //for button
 	    "pressed" : function(item, state){}
 	}
     }
+*/
 }
