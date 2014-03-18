@@ -1,34 +1,58 @@
-function mq(capsule){
-    var known_nodes = {};
+exports.create = function(capsule){
+    var transport = capsule.modules.transport;
+    var known_nodes = [];
     var callbacks = {};
+    var connected = [];
     var listened = [];
+    var addrs_to_listen = [];
 
-    this.uuid = modules.uuid.generate_str();
+    var self_uuid = capsule.modules.uuid.generate_str();
+    
+    function _node_add(context, type){
+	var node = transport[context.transport].create(context, transport.features.client, capsule);
+	node.on_msg(function(msg){
+			_dispatch(transport, context, msg);
+		    });
+	node.connect();
+	
+	known_nodes.push({ "context" : context,
+			   "transport" : node}); 	
+	
+	if(type)
+	    node.send({ "type" : type,
+			"id" : self_uuid,
+			"address" : addrs_to_listen[0]});	
+    }
+    
+    function _send(uuid, msg, uuid_from){
+	if(uuid_from == self_uuid)
+	    return;
+	if(!uuid_from)
+	    uuid_from = self_uuid;
 
-    function _send(uuid, msg){
-	var transport = find_closer(msg.id);
-	//тут надо задуматься о гарантиях доставки и всяких транспортных неурядицах
+	var transport = _find_closer(msg.id);
 	if(transport)
 	    transport.send({
 			       "type" : 'msg',
-			       "id" : uuid,
+			       "id" : uuid_from,
 			       "body" : msg
 			   })
 	else {
 	    for(id in known_nodes){
 		known_nodes[id].transport.send({
 						   "type" : 'msg',
-						   "id" : uuid,
+						   "id" : uuid_from,
 						   "body" : msg
 					       })
 	    }
 	}
     }
-    function dispatch(transport_from, msg){
+    function _dispatch(transport_from, context_from, msg){
 	switch(msg.type){
 	    case 'ping' :
+	    _node_add(context_from, null);
 	    break;
-	    
+
 	    case 'left' :
 	    break;
 	    
@@ -41,12 +65,12 @@ function mq(capsule){
 	    if(callbacks.hasOwnProperty(msg.id))
 		callbacks[msg.id](msg.body);
 	    else 
-		_send(msg.id, msg.body);
+		_send(msg.id, msg.body, msg.id_from);
 	    break;
 	}
     }
     
-    function find_closer(uuid){
+    function _find_closer(uuid){
 	return null;
     }
 
@@ -54,44 +78,44 @@ function mq(capsule){
      * 
      * @urls_to_listen -array of addresses to accept incoming messages
      */
-    this.activate = function(urls_to_listen){
-	//тут мы проверяем наличие транспортов, способных переварить адресы
-	//если такие транспорты есть, то создаём их и подключаем себя к ним чтобы слушать
-	var to_listen_1 = capsule.transport.direct.create(to_listen[1], capsule.transport.direct.features.client);
-    }
+    return {
+	"activate" : function(){
+	    addrs_to_listen = arguments;
+	    for(ind in arguments){
+		var context = arguments[ind];
+		var _listened = transport[context.transport].create(context, transport.features.server, capsule);
+		_listened.on_connect(function(socket){
+					 connected.push(socket);
+					 socket.on_msg(function(msg){
+							   _dispatch(socket, context, msg);
+						       })
+				     });
 
-    //stopping a sending and a receiving msgs, destroing all associated transports
-    this.deactivate = function(){
-	
-    }
+		listened.push(_listened);
+	    }	    
+	},
 
-    this.nodes_add = function(urls){
-	//сравниваем с теми, что уже занесены для новых:
-	//находим подходящие транспорты для urls, создаём их
+	"deactivate" : function(){
+	    connected = [];
+	    for(ind in listened)
+		listened[ind].destroy();
+	    listened = [];
+	},
 
-	for(node in transports){
-	    transports[node].on_msg(function(msg){
-					dispatch(transports[node], msg);
-				    })
-	    //посылаем всем информацию о себе
-	    transports[node].send({
-				      "type" : "ping",
-				      "id" : this.uuid,
-				      "addr" : to_listen[0]
-				  })	    
-	}
-	known_nodes = known_nodes.join(new_nodes); 	
-    }
+	"node_add" : function(context){
+	    _node_add(context, 'ping');
+	},
 
-    this.on_msg = function(uuid, callback){
-	if(callback)
-	    callbacks[uuid] = callback;
-	else
-	    delete callbacks[uuid];
-    }
+	"on_msg" : function(uuid, callback){
+	    if(callback)
+		callbacks[uuid] = callback;
+	    else
+		delete callbacks[uuid];
+	},
     
-    this.send = function(uuid, msg){
-	_send(uuid, msg);
+	"send" : function(uuid, msg){
+	    _send(uuid, msg, null);
+	}	
     }
 }
 
