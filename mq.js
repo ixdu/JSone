@@ -2,55 +2,57 @@ exports.create = function(capsule){
     var transport = capsule.modules.transport;
     var known_nodes = [];
     var callbacks = {};
-    var connected = [];
+    var sockets = [];
     var listened = [];
     var addrs_to_listen = [];
 
     var self_uuid = capsule.modules.uuid.generate_str();
     
     function _node_add(context, type){
-	var node = transport[context.transport].create(context, transport.features.client, capsule);
-	node.on_msg(function(msg){
+	var socket = transport[context.transport].create(context, transport.features.client, capsule);
+	socket.on_msg(function(msg){
 			_dispatch(transport, context, msg);
 		    });
-	node.connect();
-	
+	socket.connect();
+	sockets.push(socket);	
+
 	known_nodes.push({ "context" : context,
-			   "transport" : node}); 	
+			   "socket" : socket}); 	
 	
 	if(type)
-	    node.send({ "type" : type,
+	    socket.send({ "type" : type,
 			"id" : self_uuid,
-			"address" : addrs_to_listen[0]});	
+			"depth" : 1,
+			"address" : addrs_to_listen[0]
+		      });	
     }
     
-    function _send(uuid, msg, uuid_from){
+    function _send(id, body, uuid_from, depth){
 	if(uuid_from == self_uuid)
 	    return;
 	if(!uuid_from)
 	    uuid_from = self_uuid;
 
+	var msg = {
+	    "type" : 'msg',
+	    "id" : id,
+	    "depth" : ++depth,
+	    "body" : body
+	};
+
 	var transport = _find_closer(msg.id);
 	if(transport)
-	    transport.send({
-			       "type" : 'msg',
-			       "id" : uuid_from,
-			       "body" : msg
-			   })
+	    transport.send(msg)
 	else {
-	    for(id in known_nodes){
-		known_nodes[id].transport.send({
-						   "type" : 'msg',
-						   "id" : uuid_from,
-						   "body" : msg
-					       })
+	    for(ind in sockets){
+		sockets[ind].send(msg);
 	    }
 	}
     }
     function _dispatch(transport_from, context_from, msg){
 	switch(msg.type){
 	    case 'ping' :
-	    _node_add(context_from, null);
+///	    _node_add(context_from, null);
 	    break;
 
 	    case 'left' :
@@ -65,7 +67,8 @@ exports.create = function(capsule){
 	    if(callbacks.hasOwnProperty(msg.id))
 		callbacks[msg.id](msg.body);
 	    else 
-		_send(msg.id, msg.body, msg.id_from);
+		if(msg.depth < 3)
+		    _send(msg.id, msg.body, msg.id_from, msg.depth);
 	    break;
 	}
     }
@@ -85,7 +88,9 @@ exports.create = function(capsule){
 		var context = arguments[ind];
 		var _listened = transport[context.transport].create(context, transport.features.server, capsule);
 		_listened.on_connect(function(socket){
-					 connected.push(socket);
+					 sockets.push(socket);
+					 //на отключение и ошибки надо поставить обработчик, чтобы убирать за собой
+					 //					 socket.on_disconected()
 					 socket.on_msg(function(msg){
 							   _dispatch(socket, context, msg);
 						       })
@@ -114,7 +119,7 @@ exports.create = function(capsule){
 	},
     
 	"send" : function(uuid, msg){
-	    _send(uuid, msg, null);
+	    _send(uuid, msg, null, 1);
 	}	
     }
 }
