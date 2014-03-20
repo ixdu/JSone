@@ -4,9 +4,7 @@ var path = require('path');
 var dsa_uuid = '000000000000002';
 
 function context_constructor(service){
-    var values = {
-	
-    }
+    var values = {};
 
     this.service = service;
 
@@ -30,15 +28,29 @@ function service_env(uuid, context, mq, env){
 	}
     }
 
-    function next(){
-	
-    }
-
     this.dispatch = function(msg){
+	var msg_env = msg.shift();
 	var name = msg.shift();
+	var return_value = null;
+	function next(){
+	    return_value = Array.prototype.slice.call(arguments);
+	}
 	msg.unshift(next);
-	if(msg_handlers.hasOwnProperty(name))
+	if(msg_handlers.hasOwnProperty(name)){	    
 	    msg_handlers[name].apply(null, msg);
+	    if(msg_env){
+		var seq = env.capsule.modules.sequence;
+		//console.log(typeof(msg_env), msg_env, 'dd');
+		seq.mq_send = mq.send;
+
+		if(!msg_env.stack.first)
+		    msg_env.stack.first = return_value;
+		msg_env.stack.push(msg_env.stack.last = return_value);
+		
+		seq.sequence_continue(msg_env.args, msg_env.stack);
+	    }
+	} else
+	    console.log('this service have no method: ', name);
     }
 
     this.react = function(msg_name, callback){
@@ -46,10 +58,10 @@ function service_env(uuid, context, mq, env){
     }
     
     this.send = function(){
-	var name = arguments[0];
 	var _arguments = Array.prototype.slice.call(arguments);
-	_arguments.splice(0, 1);
-	mq.send(name, _arguments);
+	var service_name = _arguments.shift();
+	_arguments.unshift(null); //setting sequence and stack data to null
+	mq.send(service_name, _arguments);
     }
 
     this.sequence = function(){
