@@ -28,6 +28,12 @@ exports.create = function(capsule){
     }
     
     function _send(id, body, uuid_from, depth){
+	//trying calling locally
+	if(callbacks.hasOwnProperty(id)){
+	    callbacks[id](body);
+	    return;	    
+	}
+
 	if(uuid_from == self_uuid)
 	    return;
 	if(!uuid_from)
@@ -101,7 +107,7 @@ exports.create = function(capsule){
 	},
 
 	"deactivate" : function(){
-	    connected = [];
+	    sockets = [];
 	    for(ind in listened)
 		listened[ind].destroy();
 	    listened = [];
