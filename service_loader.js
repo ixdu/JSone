@@ -11,7 +11,6 @@ function context_constructor(service){
     this.service = service;
 
     this.set = function(key, value){
-//	console.log();
 	values[key] = value;
     }
 
@@ -47,14 +46,15 @@ function service_env(uuid, context, mq, env){
     }
     
     this.send = function(){
+	var name = arguments[0];
+	var _arguments = Array.prototype.slice.call(arguments);
+	_arguments.splice(0, 1);
+	mq.send(name, _arguments);
     }
 
     this.sequence = function(){
     }
 
-    this.print = function(){
-//	console.log(msg_handlers);
-    }
 }
 
 exports.load = function(service, mq, env){

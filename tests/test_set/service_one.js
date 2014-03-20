@@ -4,6 +4,7 @@ exports.service_one = function(context, send, react, sequence){
 
     react("init", function(next, arg1){
 	      console.log('init say: ' + arg1);
+	      send(context.service, 'pong', "heloo ball");
 	  });
 	  
     react("ping", function(next, thing){
