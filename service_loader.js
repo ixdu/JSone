@@ -1,5 +1,3 @@
-var path = require('path');
-
 //uuid of all dsa instance equal to
 var dsa_uuid = '000000000000002';
 
@@ -69,11 +67,12 @@ function service_env(uuid, context, mq, env){
 
 }
 
-exports.load = function(service, mq, env){
+exports.load = function(path, mq, env){
     var uuid = env.capsule.modules.uuid.generate_str();
     var context = new context_constructor(uuid);
     var senv = new service_env(uuid, context, mq, env); 
-    require('./' + service + '.js')[path.basename(service)](context, senv.send, senv.react, senv.sequence);
+    var service = require('./' + path + '.js');
+    service.init(context, senv.send, senv.react, senv.sequence);
     mq.on_msg(uuid, senv.dispatch);
     return uuid;
 }

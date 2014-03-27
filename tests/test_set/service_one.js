@@ -1,4 +1,4 @@
-exports.service_one = function(context, send, react, sequence){
+exports.init = function(context, send, react, sequence){
     context.set('hello', 'hoi');
     context.set('important', { "imp" : "очень важно"});
 

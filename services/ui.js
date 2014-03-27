@@ -1,4 +1,4 @@
-var comp = require('modules/Compositer.js');
+//var comp = window.Compositer;
 
 function create_tree(comp, frame, ui_tree){
     var obj_tree = {
@@ -16,11 +16,158 @@ function create_tree(comp, frame, ui_tree){
     return obj_tree;
 }
 
-exports.ui = function(context, send, react, sequence){
+exports.init = function(context, send, react, sequence){
     react("init",
 	  function(next){
 	      context.set("elems", []);
 	  });
+    react("paint",
+	 function(next){
+	     var comp = new Compositer();
+	     var root = 0,
+
+             frame = comp.frame_create(
+                 {
+                     width : '25%',
+                     height : '25%',
+
+                     x : '0%',
+                     y : '0%',
+
+                     z_index : '1'
+                 }
+             ),
+
+             image_red = comp.image_create(
+                 {
+                     width : '100%',
+                     height : '100%',
+
+                     x : '0%',
+                     y : '0%',
+
+                     z_index : '1',
+
+                     source : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY3growIAAycBLhVrvukAAAAASUVORK5CYII='
+                 }
+             ),
+
+             image_green = comp.image_create(
+                 {
+                     width : '80%',
+                     height : '80%',
+
+                     x : '10%',
+                     y : '10%',
+
+                     z_index : '2',
+
+                     source : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY2D4zwAAAgIBANHTRkQAAAAASUVORK5CYII='
+                 }
+             ),
+
+             image_blue = comp.image_create(
+                 {
+                     width : '60%',
+                     height : '60%',
+
+                     x : '20%',
+                     y : '20%',
+
+                     z_index : '3',
+
+                     source : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY2Bg+A8AAQMBAKJTBdAAAAAASUVORK5CYII='
+                 }
+             ),
+
+             anim_right = comp.anim_create([
+					       {
+						   duration : 0,
+
+						   actions :
+						   {
+						       x : 25
+						   }
+					       }
+					   ]),
+
+             anim_down = comp.anim_create([
+					      {
+						  duration : 0,
+
+						  actions :
+						  {
+						      y : 25
+						  }
+					      }
+					  ]),
+
+             anim_left = comp.anim_create([
+					      {
+						  duration : 0,
+
+						  actions :
+						  {
+						      x : -25
+						  }
+					      }
+					  ]),
+
+             anim_up = comp.anim_create([
+					    {
+						duration : 0,
+
+						actions :
+						{
+						    y : -25
+						}
+					    }
+					]),
+
+             bind_right = comp.anim_bind(frame, anim_right),
+             bind_down  = comp.anim_bind(frame, anim_down),
+             bind_left  = comp.anim_bind(frame, anim_left),
+             bind_up    = comp.anim_bind(frame, anim_up),
+
+             animation = {
+                 counter : 0,
+                 animation : 0,
+
+                 animations :
+                 [
+                     bind_right,
+                     bind_down,
+                     bind_left,
+                     bind_up
+                 ],
+
+                 get : (function () {
+                            if (this.counter++ === 3) {
+				this.counter = 1;
+
+				if (this.animation++ === 3) {
+                                    this.animation = 0;
+				}
+                            }
+
+                            return this.animations[this.animation];
+			})
+             };
+
+             comp.event_register(frame, 'pointer_down');
+
+             comp.events_callback_set(function (elementId, eventName, eventData) {
+					  if (elementId === frame && eventName === 'pointer_down') {
+					      comp.anim_start(animation.get());
+					  }
+				      });
+
+             comp.frame_add(frame, image_red);
+             comp.frame_add(frame, image_green);
+             comp.frame_add(frame, image_blue);
+
+             comp.frame_add(root, frame);
+	 })
     react("show_hide",
 	  function(next){
 	      var elems = context.get("elems");
@@ -83,5 +230,5 @@ exports.ui = function(context, send, react, sequence){
 	    "pressed" : function(item, state){}
 	}
     }
-*/
+*/   
 }
