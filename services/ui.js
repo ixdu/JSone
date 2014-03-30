@@ -1,81 +1,14 @@
 /*
- копосайтер должен только предоставлять frame, причём как для их прямого использования,
+ компосайтер должен только предоставлять frame, причём как для их прямого использования,
  так как и для их использования для создания других элементов. Сейчас он также содержит text и
  image, но их реализация должна быть вынесена за пределы compositer, прежде всего логически!
 */
-
-var comp = new Compositer(); 
-
-var elem_image = {
-    "create" : comp.image_create,
-    "destroy" : comp.image_destroy
-}
-
-var elem_text = {
-    "create" : comp.text_create,
-    "destroy" : comp.text_destroy
-}
-
-//image and text based ui controls
-
-function overlay_controls(){
-    this.image = elem_image;
-
-    this.text = elem_text;
-
-    /*
-     * Button widget
-     * 
-     * properties : state, label, activated
-     * 
-     * events: pressed, unpressed
-     */
-    this.button = {
-	"create" : function(info){
-	    return 0;
-	},
-	"update" : function(updating_info){
-	    
-	},
-	"destroy" : function(){
-	}
-    }
-
-    /*
-     * Entry widget
-     * 
-     * properties: text, selected_text, read_only, max_length, cursor_position
-     * 
-     * events: editing_finished, selection_changed, text_changed, cursor_position_changed
-     */
-
-    this.entry = {
-	"create" : function(info){
-	    return 0;
-	},
-	"update" : function(updating_info){
-	    
-	},
-	"destroy" : function(){
-	}
-    }
-}
-
-var ocontrols = new overlay_controls();
-
-//native ui controls like a button in html or etry in gtk
-
-function native_controls(){
-    
-}
-
-var ncontrols = new native_controls();
 
 function destroy_ui_tree(ui_tree){
     
 }
 
-function modify_ui_tree(controls, current_tree, update_tree, parent_frame){
+function modify_ui_tree(comp, base_items, controls, current_tree, update_tree, parent_frame){
     for(key in update_tree){
 	if(typeof(update_tree[key]) == 'object'){
 	    if(update_tree[key].hasOwnProperty('type')){
@@ -84,7 +17,7 @@ function modify_ui_tree(controls, current_tree, update_tree, parent_frame){
 		current_tree[key].x = update_tree[key].x;
 		current_tree[key].y = update_tree[key].y;
 		current_tree[key].width = update_tree[key].width;
-		current_tree[key].heigth = update_tree[key].heigth;
+		current_tree[key].height = update_tree[key].height;
 		current_tree[key].z_index = update_tree[key].z_index;
 		current_tree[key].new = true;
 
@@ -103,24 +36,40 @@ function modify_ui_tree(controls, current_tree, update_tree, parent_frame){
 			
 		    }
 		    if(update_tree[key].hasOwnProperty('childs')){
-			current_tree[key].childs = modify_ui_tree(controls, {}, update_tree[key].childs, parent_frame);
+			current_tree[key].childs = modify_ui_tree(comp, base_items, controls, {}, update_tree[key].childs, current_tree[key]._frame);
 		    }
-		} 
-		else if (controls.hasOwnProperty(type)){
-		    console.log('modifying ', type);
-		    //this is just hack, copying specialized fiels must be doing rigth way
+		} else if (base_items.hasOwnProperty(type)){
 		    if(type == 'image')
 			current_tree[key]['source'] = update_tree[key]['source'];
+		    if(current_tree[key].new){	
+			//creating new item
+			var item = base_items[type].create(current_tree[key]);
+			if(item){
+			    comp.frame_add(parent_frame, item);
+			    current_tree[key]._frame = item;			    
+			} else
+			    console.log('item declaration is incorrent:', key);
+		    } else {
+			//modifying exists control
+			
+		    }
+		} else if(controls.hasOwnProperty(type)){
+		    //this is just hack, copying specialized fiels must be doing rigth way
+		    if(type == 'button')
+			current_tree[key]['label'] = update_tree[key]['label'];
 
 		    if(current_tree[key].new){	
 			//creating new control
 
 			var control = controls[type].create(current_tree[key]);
 //			console.log(current);
-			if(control)
+			if(control){
 			    comp.frame_add(parent_frame, control);
-			current_tree[key]._frame = control;
-		    }else{
+			    current_tree[key]._frame = control;			    
+			} else
+			    console.log('control declaration is incorrent:', key);
+
+		    } else {
 			//modifying exists control
 			
 		    }
@@ -137,7 +86,12 @@ function modify_ui_tree(controls, current_tree, update_tree, parent_frame){
     }
 }
 
-exports.init = function(context, send, react, sequence){
+exports.init = function(env, context, send, react, sequence){
+    var comp = env.capsule.modules.ui.Compositer.create();
+    var base_items = env.capsule.modules.ui.base_items.create(comp);
+    var ocontrols =  env.dsa.parts.ui.overlay_controls.create(comp, base_items, sequence);
+    var ncontrols = env.dsa.parts.ui.native_controls.create(comp, sequence);
+
     react("init",
 	  function(next, controls_type){
 	      if(controls_type == 'native')
@@ -155,7 +109,7 @@ exports.init = function(context, send, react, sequence){
 	 function(next, update_tree){
 	     var controls = context.get('controls_type') == 'native' ? ncontrols : ocontrols;
 
-	     context.set('root', modify_ui_tree(controls, context.get('root'), update_tree, 0));
+	     context.set('root', modify_ui_tree(comp, base_items, controls, context.get('root'), update_tree, 0));
 	 });
 
     //export part of ui tree to json. Export_pattern used for detection of parts tree to export. Whole

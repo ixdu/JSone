@@ -72,7 +72,7 @@ exports.load = function(path, mq, env){
     var context = new context_constructor(uuid);
     var senv = new service_env(uuid, context, mq, env); 
     var service = require('./' + path + '.js');
-    service.init(context, senv.send, senv.react, senv.sequence);
+    service.init(env, context, senv.send, senv.react, senv.sequence);
     mq.on_msg(uuid, senv.dispatch);
     return uuid;
 }
