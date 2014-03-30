@@ -1,177 +1,178 @@
-//var comp = window.Compositer;
+/*
+ копосайтер должен только предоставлять frame, причём как для их прямого использования,
+ так как и для их использования для создания других элементов. Сейчас он также содержит text и
+ image, но их реализация должна быть вынесена за пределы compositer, прежде всего логически!
+*/
 
-function create_tree(comp, frame, ui_tree){
-    var obj_tree = {
-    }
-    for(element in ui_tree){
-	switch(ui_tree){
-	    case 'image' :
-	    break;
-	    case 'button' : 
-	    break;
-	    case 'entry' :
-	    break;
+var comp = new Compositer(); 
+
+var elem_image = {
+    "create" : comp.image_create,
+    "destroy" : comp.image_destroy
+}
+
+var elem_text = {
+    "create" : comp.text_create,
+    "destroy" : comp.text_destroy
+}
+
+//image and text based ui controls
+
+function overlay_controls(){
+    this.image = elem_image;
+
+    this.text = elem_text;
+
+    /*
+     * Button widget
+     * 
+     * properties : state, label, activated
+     * 
+     * events: pressed, unpressed
+     */
+    this.button = {
+	"create" : function(info){
+	    return 0;
+	},
+	"update" : function(updating_info){
+	    
+	},
+	"destroy" : function(){
 	}
     }
-    return obj_tree;
+
+    /*
+     * Entry widget
+     * 
+     * properties: text, selected_text, read_only, max_length, cursor_position
+     * 
+     * events: editing_finished, selection_changed, text_changed, cursor_position_changed
+     */
+
+    this.entry = {
+	"create" : function(info){
+	    return 0;
+	},
+	"update" : function(updating_info){
+	    
+	},
+	"destroy" : function(){
+	}
+    }
+}
+
+var ocontrols = new overlay_controls();
+
+//native ui controls like a button in html or etry in gtk
+
+function native_controls(){
+    
+}
+
+var ncontrols = new native_controls();
+
+function destroy_ui_tree(ui_tree){
+    
+}
+
+function modify_ui_tree(controls, current_tree, update_tree, parent_frame){
+    for(key in update_tree){
+	if(typeof(update_tree[key]) == 'object'){
+	    if(update_tree[key].hasOwnProperty('type')){
+		//нужно проверить правильность всех значений, вероятно)))
+		current_tree[key] = {};
+		current_tree[key].x = update_tree[key].x;
+		current_tree[key].y = update_tree[key].y;
+		current_tree[key].width = update_tree[key].width;
+		current_tree[key].heigth = update_tree[key].heigth;
+		current_tree[key].z_index = update_tree[key].z_index;
+		current_tree[key].new = true;
+
+		var type = update_tree[key].type;
+
+		if(type == 'frame'){		    
+		    console.log('modifying frame');
+		    if(current_tree[key].new){	
+			//creating new frame
+
+			var frame = comp.frame_create(current_tree[key]);
+			comp.frame_add(parent_frame, frame);
+			current_tree[key]._frame = frame;
+		    }else{
+			//modifying exists frame
+			
+		    }
+		    if(update_tree[key].hasOwnProperty('childs')){
+			current_tree[key].childs = modify_ui_tree(controls, {}, update_tree[key].childs, parent_frame);
+		    }
+		} 
+		else if (controls.hasOwnProperty(type)){
+		    console.log('modifying ', type);
+		    //this is just hack, copying specialized fiels must be doing rigth way
+		    if(type == 'image')
+			current_tree[key]['source'] = update_tree[key]['source'];
+
+		    if(current_tree[key].new){	
+			//creating new control
+
+			var control = controls[type].create(current_tree[key]);
+//			console.log(current);
+			if(control)
+			    comp.frame_add(parent_frame, control);
+			current_tree[key]._frame = control;
+		    }else{
+			//modifying exists control
+			
+		    }
+		} else 
+		    console.log('this type of ui element is not supported: ', type);
+
+	    }else if(update_tree[key] == null)
+		destroy_ui_tree(current_tree); //deleting any parts of typee - is just null assigned to head of parts
+	    else
+		console.log('type field must be setten within ', key);
+
+	}else
+	    console.log('type of ', key, ' must be object');
+    }
 }
 
 exports.init = function(context, send, react, sequence){
     react("init",
-	  function(next){
+	  function(next, controls_type){
+	      if(controls_type == 'native')
+		  context.set('controls_type', 'native');
+	      else 
+		  context.set('controls_type', 'overlay');
+
+	      context.set('root', {});
 	      context.set("elems", []);
 	  });
-    react("paint",
-	 function(next){
-	     var comp = new Compositer();
-	     var root = 0,
 
-             frame = comp.frame_create(
-                 {
-                     width : '25%',
-                     height : '25%',
+    //change ui tree. Main point to create new elements, delete old, change relations and properties.
+   //ui_tree - this is json definition of nested simple ui elements like buttons, entry, labels
+    react("update",
+	 function(next, update_tree){
+	     var controls = context.get('controls_type') == 'native' ? ncontrols : ocontrols;
 
-                     x : '0%',
-                     y : '0%',
+	     context.set('root', modify_ui_tree(controls, context.get('root'), update_tree, 0));
+	 });
 
-                     z_index : '1'
-                 }
-             ),
+    //export part of ui tree to json. Export_pattern used for detection of parts tree to export. Whole
+    //tree exporting is allowed
+    react("export",
+	 function(next, export_pattern){
+	 });
+    
 
-             image_red = comp.image_create(
-                 {
-                     width : '100%',
-                     height : '100%',
-
-                     x : '0%',
-                     y : '0%',
-
-                     z_index : '1',
-
-                     source : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY3growIAAycBLhVrvukAAAAASUVORK5CYII='
-                 }
-             ),
-
-             image_green = comp.image_create(
-                 {
-                     width : '80%',
-                     height : '80%',
-
-                     x : '10%',
-                     y : '10%',
-
-                     z_index : '2',
-
-                     source : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY2D4zwAAAgIBANHTRkQAAAAASUVORK5CYII='
-                 }
-             ),
-
-             image_blue = comp.image_create(
-                 {
-                     width : '60%',
-                     height : '60%',
-
-                     x : '20%',
-                     y : '20%',
-
-                     z_index : '3',
-
-                     source : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY2Bg+A8AAQMBAKJTBdAAAAAASUVORK5CYII='
-                 }
-             ),
-
-             anim_right = comp.anim_create([
-					       {
-						   duration : 0,
-
-						   actions :
-						   {
-						       x : 25
-						   }
-					       }
-					   ]),
-
-             anim_down = comp.anim_create([
-					      {
-						  duration : 0,
-
-						  actions :
-						  {
-						      y : 25
-						  }
-					      }
-					  ]),
-
-             anim_left = comp.anim_create([
-					      {
-						  duration : 0,
-
-						  actions :
-						  {
-						      x : -25
-						  }
-					      }
-					  ]),
-
-             anim_up = comp.anim_create([
-					    {
-						duration : 0,
-
-						actions :
-						{
-						    y : -25
-						}
-					    }
-					]),
-
-             bind_right = comp.anim_bind(frame, anim_right),
-             bind_down  = comp.anim_bind(frame, anim_down),
-             bind_left  = comp.anim_bind(frame, anim_left),
-             bind_up    = comp.anim_bind(frame, anim_up),
-
-             animation = {
-                 counter : 0,
-                 animation : 0,
-
-                 animations :
-                 [
-                     bind_right,
-                     bind_down,
-                     bind_left,
-                     bind_up
-                 ],
-
-                 get : (function () {
-                            if (this.counter++ === 3) {
-				this.counter = 1;
-
-				if (this.animation++ === 3) {
-                                    this.animation = 0;
-				}
-                            }
-
-                            return this.animations[this.animation];
-			})
-             };
-
-             comp.event_register(frame, 'pointer_down');
-
-             comp.events_callback_set(function (elementId, eventName, eventData) {
-					  if (elementId === frame && eventName === 'pointer_down') {
-					      comp.anim_start(animation.get());
-					  }
-				      });
-
-             comp.frame_add(frame, image_red);
-             comp.frame_add(frame, image_green);
-             comp.frame_add(frame, image_blue);
-
-             comp.frame_add(root, frame);
-	 })
+    react("hide_element",
+	  function(next, element_id){
+	  });
+    
     react("show_hide",
 	  function(next){
 	      var elems = context.get("elems");
-
+	      
 	      if(context.get('visible') == true){
 		  context.set('visible', false);
 		  comp.change_prop(0, { "opacity" : "100%" });
@@ -185,50 +186,4 @@ exports.init = function(context, send, react, sequence){
 	      }
 	      
 	  });
-    
-    //elements messages
-    react("give_element",
-	  function(next, client){
-	      var elems = context.get("elems");
-	      var element = {
-		  "id" : uuid.generate_str(),
-		  "client" : back,
-		  "frame" : Compositer.frame_create()
-	      }
-	      elems[element.id] = element;
-	      context.set("elems", elems);
-	      next(element.id);
-	  });
- 
-   //ui_tree - this is json definition of nested simple ui elements like buttons, entry, labels
-    react("fill_element",
-	  function(next, element_id, ui_tree){
-	      var elems = context.get("elems");
-	      elems[element_id].tree = create_tree(comp, elems[element_id].frame, ui_tree);
-	      context.set("elems", elems);
-	      //парсим тут дерево и реализуем разные элементы:)
-	  });
-	   
-    //ui_modificator is like ui_tree, but consist delete element for deleting exists elements. New
-    // elements added to exists tree, exists elements changed
-    react("change_element",
-	  function(next, element_id, ui_modificator){
-	      
-	  });
-    
-    react("hide_element",
-	  function(next, element_id){
-	  });
-
-/*	"out" : {
-	    //for all visual elements
-	    //state is shown or hided
-	    "visible" : function(state){},
-	    //for entry
-	    "typed" : function(item, typed){},
-	    //for button
-	    "pressed" : function(item, state){}
-	}
-    }
-*/   
 }
