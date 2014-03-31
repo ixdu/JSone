@@ -55,8 +55,10 @@ function modify_ui_tree(comp, base_items, controls, current_tree, update_tree, p
 		    }
 		} else if(controls.hasOwnProperty(type)){
 		    //this is just hack, copying specialized fiels must be doing rigth way
-		    if(type == 'button')
+		    if(type == 'button'){
 			current_tree[key]['label'] = update_tree[key]['label'];
+			current_tree[key].on_pressed = update_tree[key].on_pressed;			
+		    }
 
 		    if(current_tree[key].new){	
 			//creating new control
@@ -92,6 +94,10 @@ exports.init = function(env, context, send, react, sequence){
     var ocontrols =  env.dsa.parts.ui.overlay_controls.create(comp, base_items, sequence);
     var ncontrols = env.dsa.parts.ui.native_controls.create(comp, sequence);
 
+    comp.events_callback_set(function (elementId, eventName, eventData) {
+				 console.log("event is happend", elementId, eventName);
+			     });
+    
     react("init",
 	  function(next, controls_type){
 	      if(controls_type == 'native')

@@ -62,7 +62,11 @@ function service_env(uuid, context, mq, env){
 	mq.send(service_name, _arguments);
     }
 
-    this.sequence = function(){
+    this.sequence = function(items){
+	var seq = env.capsule.modules.sequence;
+	//console.log(typeof(msg_env), msg_env, 'dd');
+	seq.mq_send = mq.send;	
+	seq.sequence.apply(seq, items);
     }
 
 }
