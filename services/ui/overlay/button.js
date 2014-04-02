@@ -7,7 +7,8 @@
  */
 
 exports.init = function(env, context, send, react, sequence){
-    var ui = env.dsa.parts.ui;
+    var ui = env.dsa.parts.ui.get(env);
+    var buttons = [];
 
     react("create", 
 	  function(next, info){
@@ -19,8 +20,8 @@ exports.init = function(env, context, send, react, sequence){
 		  button.on_pressed = info.on_pressed;
 	      
 	      info.color = '#ffffff';
-	      button.frame = comp.frame_create(info);
-	      button.pressed_bg = base_items.image.create( 
+	      button._frame = ui.comp.frame_create(info);
+	      button.pressed_bg = ui.base_items.image.create( 
 		  {
 		      "x" : "1%",
 		      "y" : "1%",
@@ -32,9 +33,9 @@ exports.init = function(env, context, send, react, sequence){
 
 		      "source" : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY2Bg+A8AAQMBAKJTBdAAAAAASUVORK5CYII='
 		  });
-	      comp.frame_add(button.frame, button.pressed_bg);
+	      ui.comp.frame_add(button._frame, button.pressed_bg);
 
-	      button.unpressed_bg = base_items.image.create( 
+	      button.unpressed_bg = ui.base_items.image.create( 
 		  {
 		      "x" : "1%",
 		      "y" : "1%",
@@ -47,9 +48,9 @@ exports.init = function(env, context, send, react, sequence){
 		      "source" : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY3growIAAycBLhVrvukAAAAASUVORK5CYII='
 		  });
 
-	      comp.frame_add(button.frame, button.unpressed_bg);
+	      ui.comp.frame_add(button._frame, button.unpressed_bg);
 
-	      button.press_anim = comp.anim_create([{
+	      button.press_anim = ui.comp.anim_create([{
 							duration : 150,
 							actions : {
 							    opacity : -80
@@ -57,7 +58,7 @@ exports.init = function(env, context, send, react, sequence){
 						    }
 						   ])
 
-	      button.unpress_anim = comp.anim_create([
+	      button.unpress_anim = ui.comp.anim_create([
 							 {
 							     duration : 150,
 							     actions : {
@@ -66,10 +67,10 @@ exports.init = function(env, context, send, react, sequence){
 							 }
 						     ])
 
-	      button.binded_press_anim = comp.anim_bind(button.unpressed_bg, button.press_anim);
-	      button.binded_unpress_anim = comp.anim_bind(button.unpressed_bg, button.unpress_anim);
+	      button.binded_press_anim = ui.comp.anim_bind(button.unpressed_bg, button.press_anim);
+	      button.binded_unpress_anim = ui.comp.anim_bind(button.unpressed_bg, button.unpress_anim);
 
-	      button.label = base_items.text.create( {
+	      button.label = ui.base_items.text.create( {
 							 "x" : "10%",
 							 "y" : "10%",
 							 "width" : "80%",
@@ -78,7 +79,7 @@ exports.init = function(env, context, send, react, sequence){
 							 
 							 "text" : info.label
 						     });
-	      comp.frame_add(button.frame, button.label);
+	      ui.comp.frame_add(button._frame, button.label);
 	      
 	      //		comp.event_register(button.binded_pressed_anim, 'animation_stopped');
 	      //		comp.event_register(button.unpressed_bg, 'pointer_down', function(eventName, eventData){
@@ -86,15 +87,15 @@ exports.init = function(env, context, send, react, sequence){
 	      //					    button.pressed = false;
 	      //				    });
 	      
-	      comp.event_register(button.frame, 'pointer_up');
-	      comp.event_register(button.frame, 'pointer_out');
-	      comp.event_register(button.frame, 'pointer_down', function(eventName, eventData){
+	      ui.comp.event_register(button._frame, 'pointer_up');
+	      ui.comp.event_register(button._frame, 'pointer_out');
+	      ui.comp.event_register(button._frame, 'pointer_down', function(eventName, eventData){
 				      console.log(eventName);
 				      switch(eventName){
 				      case 'pointer_down' : 
 					  if(!button.pressed){
 					      button.pressed = true;					    
-					      comp.anim_start(button.binded_press_anim);
+					      ui.comp.anim_start(button.binded_press_anim);
 					      if(button.hasOwnProperty('on_pressed')){
 						  sequence(button.on_pressed);
 					      }
@@ -105,16 +106,17 @@ exports.init = function(env, context, send, react, sequence){
 				      case 'pointer_up' :
 					  if(button.pressed){
 					      button.pressed = false;					    
-					      comp.anim_start(button.binded_unpress_anim);		
+					      ui.comp.anim_start(button.binded_unpress_anim);		
 					  }
 					  break;
 				      }
 				  });
 	      
 	      
-	      buttons[button.frame] = button;	    
-	      
-	      return button;
+	      buttons[button._frame] = button;
+	      console.log('button is ', button._frame);
+   
+	      next(button._frame);
 	  });
     
     react("destroy",
@@ -133,7 +135,7 @@ exports.init = function(env, context, send, react, sequence){
 	  });
 
     react("update",
-      function(next, id, updating_info){
-		
-      });
+	  function(next, id, updating_info){
+	      
+	  });
 }
