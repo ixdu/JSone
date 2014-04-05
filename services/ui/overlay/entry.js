@@ -6,12 +6,12 @@
  * events: editing_finished, selection_changed, text_changed, cursor_position_changed
  */
 
-exports.init = function(env, context, send, react, sequence){
+exports.init = function(env, context, send, react, sprout){
     var ui = env.dsa.parts.ui.get(env);
     var entries = [];
 
     react("create",
-	  function(next, info){
+	  function(stack, info, add_to){
 	      var entry = {
 		  text : ''  
 	      };
@@ -24,7 +24,8 @@ exports.init = function(env, context, send, react, sequence){
 	      entries[entry._frame] = entry;
 	      console.log('entry is ', entry._frame);
 
-	      next(entry._frame);
+	      if(typeof(add_to) == 'string')
+		  ui.comp.frame_add(stack[add_to], entry._frame);
 	  });
     
     react("update",

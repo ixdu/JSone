@@ -6,11 +6,11 @@
  * events: slide, unslide
  */
 
-exports.init = function(env, context, send, react, sequence){
+exports.init = function(env, context, send, react, sprout){
     var ui = env.dsa.parts.ui.get(env);
     var panels = [];
     react("create",
-	  function(next, info){
+	  function(stack, info){
 	      var panel = {
 		  "orientation" : "bottom"
 	      };
@@ -23,20 +23,21 @@ exports.init = function(env, context, send, react, sequence){
 	      
 	      ui.comp.frame_add(0, panel._frame);
 	      console.log('panel is ', panel._frame);
-	      next(panel._frame);
+
+	      return panel._frame;
 	  });
 
     react("add",
-	 function(next, id, child){
+	 function(stack, id, child){
 	     ui.comp.frame_add(id, child); 
 	 });
 
     react("update",
-	  function(next, id, updating_info){
+	  function(stack, id, updating_info){
 	      
 	  });
 
     react("destroy",
-	  function(next, id){
+	  function(stack, id){
 	  });
 }

@@ -29,26 +29,23 @@ function service_env(uuid, context, mq, env){
     this.dispatch = function(msg){
 	var msg_env = msg.shift();
 	var name = msg.shift();
-	var return_value = null;
-	function next(){
-	    return_value = Array.prototype.slice.call(arguments);
-	}
-	msg.unshift(next);
 	if(msg_handlers.hasOwnProperty(name)){	    
-	    msg_handlers[name].apply(null, msg);
-	    if(msg_env){
+	    if(msg_env != null){
+		msg.unshift(msg_env.stack);
+		var value_to_push = msg_handlers[name].apply(null, msg);
+		if(msg_env.name)
+		    msg_env.stack[msg_env.name] = value_to_push;
+		else msg_env.stack.push(value_to_push);
+
 		var seq = env.capsule.modules.sequence;
 		//console.log(typeof(msg_env), msg_env, 'dd');
 		seq.mq_send = mq.send;
 
-		if(!msg_env.stack.first)
-		    msg_env.stack.first = return_value;
-		msg_env.stack.push(msg_env.stack.last = return_value);
-		
-		seq.sequence_continue(msg_env.args, msg_env.stack);
-	    }
+		seq.run(msg_env.next, msg_env.stack);
+	    } else
+		msg_handlers[name].apply(null, msg);
 	} else
-	    console.log('this service have no method: ', name);
+	    console.log('this service have no such method: ', name);
     }
 
     this.react = function(msg_name, callback){
@@ -58,15 +55,14 @@ function service_env(uuid, context, mq, env){
     this.send = function(){
 	var _arguments = Array.prototype.slice.call(arguments);
 	var service_name = _arguments.shift();
-	_arguments.unshift(null); //setting sequence and stack data to null
+	_arguments.unshift(null); //setting sprout and stack data to null
 	mq.send(service_name, _arguments);
     }
 
-    this.sequence = function(items){
+    this.sprout = function(sprout){
 	var seq = env.capsule.modules.sequence;
-	//console.log(typeof(msg_env), msg_env, 'dd');
 	seq.mq_send = mq.send;	
-	seq.sequence.apply(seq, items);
+	seq.run(sprout);
     }
 
 }
@@ -76,7 +72,7 @@ exports.load = function(path, mq, env){
     var context = new context_constructor(uuid);
     var senv = new service_env(uuid, context, mq, env); 
     var service = require('./' + path + '.js');
-    service.init(env, context, senv.send, senv.react, senv.sequence);
+    service.init(env, context, senv.send, senv.react, senv.sprout);
     mq.on_msg(uuid, senv.dispatch);
     return uuid;
 }

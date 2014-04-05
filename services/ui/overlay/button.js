@@ -6,12 +6,12 @@
  * events: pressed, unpressed
  */
 
-exports.init = function(env, context, send, react, sequence){
+exports.init = function(env, context, send, react, sprout){
     var ui = env.dsa.parts.ui.get(env);
     var buttons = [];
 
     react("create", 
-	  function(next, info){
+	  function(stack, info, add_to){
 	      var button = {
 		  pressed : false
 	      };
@@ -97,7 +97,7 @@ exports.init = function(env, context, send, react, sequence){
 					      button.pressed = true;					    
 					      ui.comp.anim_start(button.binded_press_anim);
 					      if(button.hasOwnProperty('on_pressed')){
-						  sequence(button.on_pressed);
+						  sprout(button.on_pressed);
 					      }
 					  }
 					  break;
@@ -116,11 +116,14 @@ exports.init = function(env, context, send, react, sequence){
 	      buttons[button._frame] = button;
 	      console.log('button is ', button._frame);
    
-	      next(button._frame);
+	      if(typeof(add_to) == 'string')
+		  ui.comp.frame_add(stack[add_to], button._frame);
+	      console.log('eee');
+//	      ui.comp.frame_add(0, button._frame);
 	  });
     
     react("destroy",
-	  function(next, id){
+	  function(stack, id){
 	      comp.frame_remove(button.frame, button.label);
 	      base_items.text.destroy(button.label);
 	      comp.frame_remove(button.frame, button.unpressed_bg);
@@ -135,7 +138,7 @@ exports.init = function(env, context, send, react, sequence){
 	  });
 
     react("update",
-	  function(next, id, updating_info){
+	  function(stack, id, updating_info){
 	      
 	  });
 }
