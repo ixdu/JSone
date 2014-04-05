@@ -20,7 +20,19 @@ exports.init = function(env, context, send, react, sprout){
 	      
 	      panel._frame = ui.comp.frame_create(info);
 	      panels[panel._frame] = panel;
-	      
+              
+	      panel.bg_image = ui.comp.image_create({
+						      width : '100%',
+						      height : '100%',
+
+						      x : '0%',
+						      y : '0%',
+
+						      z_index : 1,
+						      source : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY2D4zwAAAgIBANHTRkQAAAAASUVORK5CYII='	
+						  });
+	      ui.comp.frame_add(panel._frame, panel.bg_image);
+
 	      ui.comp.frame_add(0, panel._frame);
 	      console.log('panel is ', panel._frame);
 

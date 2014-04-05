@@ -23,10 +23,10 @@ exports.init = function(env, context, send, react, sprout){
 	      button._frame = ui.comp.frame_create(info);
 	      button.pressed_bg = ui.base_items.image.create( 
 		  {
-		      "x" : "1%",
-		      "y" : "1%",
-		      "width" : "98%",
-		      "height" : "98%",
+		      "x" : "0%",
+		      "y" : "0%",
+		      "width" : "100%",
+		      "height" : "100%",
 		      
 		      "z_index" : 2,
 		      "opacity" : 100,
@@ -37,10 +37,10 @@ exports.init = function(env, context, send, react, sprout){
 
 	      button.unpressed_bg = ui.base_items.image.create( 
 		  {
-		      "x" : "1%",
-		      "y" : "1%",
-		      "width" : "98%",
-		      "height" : "98%",
+		      "x" : "0%",
+		      "y" : "0%",
+		      "width" : "100%",
+		      "height" : "100%",
 		      
 		      "z_index" : 2,
 		      "opacity" : 100,

@@ -59,10 +59,10 @@ function service_env(uuid, context, mq, env){
 	mq.send(service_name, _arguments);
     }
 
-    this.sprout = function(sprout){
+    this.sprout = function(sprout, stack){
 	var seq = env.capsule.modules.sequence;
 	seq.mq_send = mq.send;	
-	seq.run(sprout);
+	seq.run(sprout, stack);
     }
 
 }
