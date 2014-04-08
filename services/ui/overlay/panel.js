@@ -13,7 +13,7 @@ exports.init = function(env, context, send, react, sprout){
     react("create",
 	  function(stack, info, add_to_obj, add_to_field){
 	      var panel = {
-		  position : "bottom",
+		  position : "top",
 		  on_slide : function(){},
 		  maximized : false,
 		  animating : false
@@ -28,21 +28,28 @@ exports.init = function(env, context, send, react, sprout){
 	      if(info.hasOwnProperty('maximized'))
 		  panel.maximized = info.maximized;
 	      
-	      if(!panel.maximized)
-		  info.y = '-90%';
+	      if(!panel.maximized&&
+		 panel.position == 'top'){
+		  info.y = '-20%';
+	      }
+
+	      if(!panel.maximized&&
+		 panel.position == 'bottom')
+		  info.y = '90%';
+
 	      panel._frame = ui.comp.frame_create(info);
 	      panel._maximized_frame = ui.comp.frame_create({
 								x : "0%",
-								y : "0%",
+								y : panel.position == 'top' ? '0%' : '60%',
 								width : "100%",
-								height : "100%",
+								height : "60%",
 								z_index : 4
 							    });
 	      panel._minimized_frame = ui.comp.frame_create({
 								x : "0%",
-								y : "90%",
+								y : panel.position == 'top' ? '60%' : '0%',
 								width : "100%",
-								height : "10%",
+								height : "40%",
 								z_index : 3
 							    });
 	      panels[panel._frame] = panel;
@@ -60,18 +67,18 @@ exports.init = function(env, context, send, react, sprout){
 	      ui.comp.frame_add(panel._frame, panel.bg_image);
 	      ui.comp.frame_add(panel._frame, panel._maximized_frame);
 	      ui.comp.frame_add(panel._frame, panel._minimized_frame);
-
+	      //offset is hardcoded, but must be calculated from height
 	      var aslide_down = ui.comp.anim_create([
 						      {
 							  duration : 100,
 							  actions : {
-							      y : 60
+							      y : panel.position == 'top' ? 15 : -15
 							  }
 						      },
 						      {
 							  duration : 300,
 							  actions : {
-							      y : 30
+							      y : panel.position == 'top' ? 5 : -5
 							  }
 						      }
 						  ]);
@@ -81,13 +88,13 @@ exports.init = function(env, context, send, react, sprout){
 						      {
 							  duration : 100,
 							  actions : {
-							      y : -60
+							      y : panel.position == 'top' ? -15 : 15
 							  }
 						      },
 						      {
 							  duration : 300,
 							  actions : {
-							      y : -30,
+							      y : panel.position == 'top' ? -5 : 5
 							  }
 						      }
 						  ]);
