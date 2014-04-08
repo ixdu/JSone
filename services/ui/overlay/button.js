@@ -7,11 +7,12 @@
  */
 
 exports.init = function(env, context, send, react, sprout){
+
     var ui = env.dsa.parts.ui.get(env);
     var buttons = [];
 
     react("create", 
-	  function(stack, info, add_to){
+	  function(stack, info, add_to_obj, add_to_field){
 	      var button = {
 		  pressed : false
 	      };
@@ -19,7 +20,6 @@ exports.init = function(env, context, send, react, sprout){
 	      if(info.hasOwnProperty('on_pressed'))
 		  button.on_pressed = info.on_pressed;
 	      
-	      info.color = '#ffffff';
 	      button._frame = ui.comp.frame_create(info);
 	      button.pressed_bg = ui.base_items.image.create( 
 		  {
@@ -90,7 +90,6 @@ exports.init = function(env, context, send, react, sprout){
 	      ui.comp.event_register(button._frame, 'pointer_up');
 	      ui.comp.event_register(button._frame, 'pointer_out');
 	      ui.comp.event_register(button._frame, 'pointer_down', function(eventName, eventData){
-				      console.log(eventName);
 				      switch(eventName){
 				      case 'pointer_down' : 
 					  if(!button.pressed){
@@ -114,12 +113,15 @@ exports.init = function(env, context, send, react, sprout){
 	      
 	      
 	      buttons[button._frame] = button;
-	      console.log('button is ', button._frame);
    
-	      if(typeof(add_to) == 'string')
-		  ui.comp.frame_add(stack[add_to], button._frame);
-	      console.log('eee');
-//	      ui.comp.frame_add(0, button._frame);
+	      if(typeof(add_to_obj) == 'string' &&
+		 typeof(add_to_field) == 'string'){
+		  ui.comp.frame_add(stack[add_to_obj][add_to_field], button._frame);
+	      }
+
+	      return {
+		_frame : button._frame  
+	      };
 	  });
     
     react("destroy",

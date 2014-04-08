@@ -1,24 +1,50 @@
 /*
  * Panel widget
  * 
- * properties: orientation, percent_slide, click_to_slide
+ * properties: orientation, percent_maximize
  * 
- * events: slide, unslide
+ * events: maximized, minimized
  */
 
 exports.init = function(env, context, send, react, sprout){
     var ui = env.dsa.parts.ui.get(env);
     var panels = [];
+
     react("create",
-	  function(stack, info){
+	  function(stack, info, add_to_obj, add_to_field){
 	      var panel = {
-		  "orientation" : "bottom"
+		  position : "bottom",
+		  on_slide : function(){},
+		  maximized : false,
+		  animating : false
 	      };
 	      
 	      if(info.hasOwnProperty('on_slide'))
 		  panel.on_slide = info.on_slide;
+
+	      if(info.hasOwnProperty('position'))
+		  panel.position = info.position;
+
+	      if(info.hasOwnProperty('maximized'))
+		  panel.maximized = info.maximized;
 	      
+	      if(!panel.maximized)
+		  info.y = '-90%';
 	      panel._frame = ui.comp.frame_create(info);
+	      panel._maximized_frame = ui.comp.frame_create({
+								x : "0%",
+								y : "0%",
+								width : "100%",
+								height : "100%",
+								z_index : 4
+							    });
+	      panel._minimized_frame = ui.comp.frame_create({
+								x : "0%",
+								y : "90%",
+								width : "100%",
+								height : "10%",
+								z_index : 3
+							    });
 	      panels[panel._frame] = panel;
               
 	      panel.bg_image = ui.comp.image_create({
@@ -28,15 +54,87 @@ exports.init = function(env, context, send, react, sprout){
 						      x : '0%',
 						      y : '0%',
 
-						      z_index : 1,
+						      z_index : 6,
 						      source : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY2D4zwAAAgIBANHTRkQAAAAASUVORK5CYII='	
-						  });
+ 						  });
 	      ui.comp.frame_add(panel._frame, panel.bg_image);
+	      ui.comp.frame_add(panel._frame, panel._maximized_frame);
+	      ui.comp.frame_add(panel._frame, panel._minimized_frame);
 
-	      ui.comp.frame_add(0, panel._frame);
-	      console.log('panel is ', panel._frame);
+	      var aslide_down = ui.comp.anim_create([
+						      {
+							  duration : 100,
+							  actions : {
+							      y : 60
+							  }
+						      },
+						      {
+							  duration : 300,
+							  actions : {
+							      y : 30
+							  }
+						      }
+						  ]);
+	      var baslide_down = ui.comp.anim_bind(panel._frame, aslide_down);
 
-	      return panel._frame;
+	      var aslide_up = ui.comp.anim_create([
+						      {
+							  duration : 100,
+							  actions : {
+							      y : -60
+							  }
+						      },
+						      {
+							  duration : 300,
+							  actions : {
+							      y : -30,
+							  }
+						      }
+						  ]);
+
+	      var baslide_up = ui.comp.anim_bind(panel._frame, aslide_up);
+	      
+	      ui.comp.event_register(baslide_down, 'animation_stopped');
+	      ui.comp.event_register(baslide_up, 'animation_stopped');
+	      ui.comp.event_register(panel._frame, 'pointer_down');
+	      ui.comp.event_register(panel._frame, 'pointer_in', function(eventName, eventData){
+					 switch(eventName){
+					     case 'animation_stopped':
+					     console.log('eeeeg');
+					     panel.animating = false;
+					     break;
+
+					     case 'pointer_in' : 
+					     if(!panel.animating){
+						 if(!panel.maximized){
+						     ui.comp.anim_start(baslide_down);			
+						     panel.maximized = true;
+						     panel.animating = true;
+						 }
+					     }
+					     break;
+					     case 'pointer_down' :
+					     if(!panel.animating){
+						 if(panel.maximized){
+						     ui.comp.anim_start(baslide_up);			
+						     panel.maximized = false;
+						     panel.animating = true;
+						 }
+					     }
+					     break;
+					 }
+				     })
+
+	      if(typeof(add_to_obj) == 'string' &&
+		 typeof(add_to_field) == 'string'){
+		  ui.comp.frame_add(stack[add_to_obj][add_to_field], panel._frame);
+	      }
+
+	      return {
+		  "_frame" : panel._frame,
+		  "maximized" : panel._maximized_frame,
+		  "minimized" : panel._minimized_frame
+	      };
 	  });
 
     react("add",

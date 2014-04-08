@@ -11,12 +11,12 @@ exports.init = function(env, context, send, react, sprout){
     var entries = [];
 
     react("create",
-	  function(stack, info, add_to){
+	  function(stack, info, add_to_obj, add_to_field){
 	      var entry = {
 		  text : ''  
 	      };
 	      
-	      if(info.hasOwnProperty('on_text_changed'))
+	      if(info.hasOwnProperty('on_text_change'))
 		  entry.on_text_changed = info.on_text_changed;
 
 	      entry._frame = ui.comp.frame_create(info);	      
@@ -35,13 +35,29 @@ exports.init = function(env, context, send, react, sprout){
 		  });
 	      ui.comp.frame_add(entry._frame, entry.bg_image);
 
-	      console.log(JSON.stringify(info));
-	      ui.comp.event_register(0, 'key_down');
+	      entry._entry = ui.comp.entry_create({
+						      width : '100%',
+						      height: '100%',
+						      x : '0%',
+						      y : '0%',
+						      z_index : 3,
+						      opacity : 100,
+										   
+						      placeholder : info.hasOwnProperty('placeholder') ? info.placeholder : 'please type a text'
+						  });
+
+	      ui.comp.frame_add(entry._frame, entry._entry);
+	      ui.comp.entry_get_control(entry._entry).on_text_change(function(text){
+									 console.log('text is ', text);
+								     });
+
+/*	      ui.comp.event_register(0, 'key_down');
 	      ui.comp.event_register(0, 'key_up', function(eventName, eventData){
 					 entry.text += String.fromCharCode(eventData.key_obj.keynum);
 					 if(entry.hasOwnProperty('on_text_changed')){
 					     var stack = [];
-					     stack['text'] = entry.text;	
+					     stack['text'] = entry.text;
+					     console.log(JSON.stringify(entry.on_text_changed));
 					     sprout(entry.on_text_changed, { text : entry.text });	     
 					 }
 
@@ -51,10 +67,10 @@ exports.init = function(env, context, send, react, sprout){
 					 }
 					 
 					 entry.text_item = ui.comp.text_create({
-										   width : '100%',
-										   height: '100%',
-										   x : '0%',
-										   y : '0%',
+										   width : '90%',
+										   height: '90%',
+										   x : '5%',
+										   y : '5%',
 										   z_index : 3,
 										   opacity : 100,
 										   
@@ -62,22 +78,31 @@ exports.init = function(env, context, send, react, sprout){
 									       });
 					 ui.comp.frame_add(entry._frame, entry.text_item);
 				     });
-
+*/
 	      
 
 	      entries[entry._frame] = entry;
 	      console.log('entry is ', entry._frame);
 
-	      if(typeof(add_to) == 'string')
-		  ui.comp.frame_add(stack[add_to], entry._frame);
+	      if(typeof(add_to_obj) == 'string' &&
+		 typeof(add_to_field) == 'string'){
+		  ui.comp.frame_add(stack[add_to_obj][add_to_field], entry._frame);
+	      }
+
+	      return {
+		  _frame : entry._frame  
+	      };
 	  });
-    
+
+//    react("be_added",
+//	  function(stack, )
+
     react("update",
-	  function(next, updating_info){
+	  function(stack, updating_info){
 	      
 	  });
 
     react("destroy",
-	  function(next, id){
+	  function(stack, id){
 	  });
 }
