@@ -40,7 +40,7 @@ function service_env(uuid, context, mq, env){
 		var seq = env.capsule.modules.sequence;
 		//console.log(typeof(msg_env), msg_env, 'dd');
 		seq.mq_send = mq.send;
-		console.log(JSON.stringify(msg_env.next));
+//		console.log(JSON.stringify(msg_env.next));
 		seq.run(msg_env.next, msg_env.stack);
 	    } else
 		msg_handlers[name].apply(null, msg);

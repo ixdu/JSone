@@ -162,7 +162,6 @@ exports.init = function(env, context, send, react, sprout){
 	      ui.comp.event_register(panel._frame, 'pointer_down', function(eventName, eventData){
 					 switch(eventName){
 					     case 'animation_stopped':
-					     console.log('eeeeg');
 					     panel.animating = false;
 					     break;
 
