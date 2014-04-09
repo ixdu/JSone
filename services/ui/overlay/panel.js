@@ -38,13 +38,22 @@ exports.init = function(env, context, send, react, sprout){
 		  info.y = '90%';
 
 	      panel._frame = ui.comp.frame_create(info);
+	      panel._maximized_parent_frame = ui.comp.frame_create({
+								x : "0%",
+								y : panel.position == 'top' ? '-40%' : '40%',
+								width : "100%",
+								height : "100%",
+								z_index : 3
+							    });
+
 	      panel._maximized_frame = ui.comp.frame_create({
 								x : "0%",
-								y : panel.position == 'top' ? '0%' : '60%',
+								y : panel.position == 'top' ? '0%' : '30%',
 								width : "100%",
-								height : "60%",
-								z_index : 4
+								height : "70%",
+								z_index : 2
 							    });
+
 	      panel._minimized_frame = ui.comp.frame_create({
 								x : "0%",
 								y : panel.position == 'top' ? '60%' : '0%',
@@ -64,21 +73,73 @@ exports.init = function(env, context, send, react, sprout){
 						      z_index : 6,
 						      source : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY2D4zwAAAgIBANHTRkQAAAAASUVORK5CYII='	
  						  });
+	      
+	      panel._minimize_button_frame = ui.comp.frame_create(
+		  {
+		      x : panel.position == 'top' ? '80%' : '0%',
+		      y : panel.position == 'top' ? '70%' : '0%',
+		      width : '20%',
+		      height : '30%'
+		  }
+	      );
+
+	      panel.minimize_button_bg = ui.base_items.image.create( 
+		  {
+		      "x" : "0%",
+		      "y" : "0%",
+		      "width" : "100%",
+		      "height" : "100%",
+		      
+		      "z_index" : 2,
+
+		      "source" : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAMSURBVBhXY2Bg+A8AAQMBAKJTBdAAAAAASUVORK5CYII='
+		  });
+
+	      ui.comp.frame_add(panel._minimize_button_frame, panel.minimize_button_bg);
+
+	      panel.minimize_button_text = ui.base_items.text.create(
+		  {
+		      "x" : "10%",
+		      "y" : "0%",
+		      "width" : "80%",
+		      "height" : "100%",
+
+		      text : 'свернуть'
+		  });
+
+	      ui.comp.frame_add(panel._minimize_button_frame, panel.minimize_button_text);
+
 	      ui.comp.frame_add(panel._frame, panel.bg_image);
-	      ui.comp.frame_add(panel._frame, panel._maximized_frame);
 	      ui.comp.frame_add(panel._frame, panel._minimized_frame);
+	      ui.comp.frame_add(panel._frame, panel._maximized_parent_frame);
+	      ui.comp.frame_add(panel._maximized_parent_frame, panel._maximized_frame);
+	      ui.comp.frame_add(panel._maximized_parent_frame, panel._minimize_button_frame);
 	      //offset is hardcoded, but must be calculated from height
+	      
+	      var maximized_down = ui.comp.anim_create([{
+							    duration : 50,
+							    actions : {
+								y : panel.position == 'top' ?  70: -70
+							    }
+							}
+						       ]);
+
+	      var bmaximized_down = ui.comp.anim_bind(panel._maximized_parent_frame, maximized_down);
+
+	      var maximized_up = ui.comp.anim_create([{
+							    duration : 50,
+							    actions : {
+								y : panel.position == 'top' ? -70 : 70
+							    }
+							}
+						       ]);
+	      var bmaximized_up = ui.comp.anim_bind(panel._maximized_parent_frame, maximized_up);
+
 	      var aslide_down = ui.comp.anim_create([
 						      {
-							  duration : 100,
+							  duration : 80,
 							  actions : {
-							      y : panel.position == 'top' ? 15 : -15
-							  }
-						      },
-						      {
-							  duration : 300,
-							  actions : {
-							      y : panel.position == 'top' ? 5 : -5
+							      y : panel.position == 'top' ? 8 : -8
 							  }
 						      }
 						  ]);
@@ -86,51 +147,48 @@ exports.init = function(env, context, send, react, sprout){
 
 	      var aslide_up = ui.comp.anim_create([
 						      {
-							  duration : 100,
+							  duration : 80,
 							  actions : {
-							      y : panel.position == 'top' ? -15 : 15
-							  }
-						      },
-						      {
-							  duration : 300,
-							  actions : {
-							      y : panel.position == 'top' ? -5 : 5
+							      y : panel.position == 'top' ? -8 : 8
 							  }
 						      }
 						  ]);
 
 	      var baslide_up = ui.comp.anim_bind(panel._frame, aslide_up);
 	      
+
 	      ui.comp.event_register(baslide_down, 'animation_stopped');
 	      ui.comp.event_register(baslide_up, 'animation_stopped');
-	      ui.comp.event_register(panel._frame, 'pointer_down');
-	      ui.comp.event_register(panel._frame, 'pointer_in', function(eventName, eventData){
+	      ui.comp.event_register(panel._frame, 'pointer_down', function(eventName, eventData){
 					 switch(eventName){
 					     case 'animation_stopped':
 					     console.log('eeeeg');
 					     panel.animating = false;
 					     break;
 
-					     case 'pointer_in' : 
+					     case 'pointer_down' : 
 					     if(!panel.animating){
 						 if(!panel.maximized){
-						     ui.comp.anim_start(baslide_down);			
+						     ui.comp.anim_start(baslide_down);
+						     ui.comp.anim_start(bmaximized_down);
 						     panel.maximized = true;
 						     panel.animating = true;
 						 }
 					     }
 					     break;
-					     case 'pointer_down' :
-					     if(!panel.animating){
-						 if(panel.maximized){
-						     ui.comp.anim_start(baslide_up);			
-						     panel.maximized = false;
-						     panel.animating = true;
-						 }
-					     }
-					     break;
 					 }
-				     })
+				     });
+
+	      ui.comp.event_register(panel._minimize_button_frame, 'pointer_down', function(eventName, eventData){
+					 if(!panel.animating){
+					     if(panel.maximized){
+						 ui.comp.anim_start(baslide_up);
+						 ui.comp.anim_start(bmaximized_up);
+						 panel.maximized = false;
+						 panel.animating = true;
+					     }
+					 }
+				     });
 
 	      if(typeof(add_to_obj) == 'string' &&
 		 typeof(add_to_field) == 'string'){

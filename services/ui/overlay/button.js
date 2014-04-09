@@ -14,7 +14,8 @@ exports.init = function(env, context, send, react, sprout){
     react("create", 
 	  function(stack, info, add_to_obj, add_to_field){
 	      var button = {
-		  pressed : false
+		  pressed : false,
+		  animating : false
 	      };
 
 	      if(info.hasOwnProperty('on_pressed'))
@@ -51,24 +52,20 @@ exports.init = function(env, context, send, react, sprout){
 	      ui.comp.frame_add(button._frame, button.unpressed_bg);
 
 	      button.press_anim = ui.comp.anim_create([{
-							duration : 150,
-							actions : {
-							    opacity : -80
-							}
-						    }
+							   duration : 150,
+							   actions : {
+							       opacity : -80
+							   }
+						       },
+						       {
+							   duration : 150,
+							   actions : {
+							       opacity : 80
+							   }
+						       }
 						   ])
 
-	      button.unpress_anim = ui.comp.anim_create([
-							 {
-							     duration : 150,
-							     actions : {
-								 opacity : 80
-							     }
-							 }
-						     ])
-
 	      button.binded_press_anim = ui.comp.anim_bind(button.unpressed_bg, button.press_anim);
-	      button.binded_unpress_anim = ui.comp.anim_bind(button.unpressed_bg, button.unpress_anim);
 
 	      button.label = ui.base_items.text.create( {
 							 "x" : "10%",
@@ -81,22 +78,30 @@ exports.init = function(env, context, send, react, sprout){
 						     });
 	      ui.comp.frame_add(button._frame, button.label);
 	      
-	      //		comp.event_register(button.binded_pressed_anim, 'animation_stopped');
-	      //		comp.event_register(button.unpressed_bg, 'pointer_down', function(eventName, eventData){
-	      //					if(eventName == 'animation_stopped')
-	      //					    button.pressed = false;
-	      //				    });
-	      
+	      ui.comp.event_register(button.binded_press_anim, 'animation_stopped');
+	      ui.comp.event_register(button.unpressed_bg, 'pointer_up', function(eventName, eventData){
+					 if(eventName == 'animation_stopped') {			
+					     console.log('eehhhh');
+					     button.animating = false;
+					 }
+				     });
 	      ui.comp.event_register(button._frame, 'pointer_up');
 	      ui.comp.event_register(button._frame, 'pointer_out');
 	      ui.comp.event_register(button._frame, 'pointer_down', function(eventName, eventData){
 				      switch(eventName){
+				      case 'animation_stopped' :
+					  console.log('eehhhh');
+					  button.animating = false;
+					  break;
 				      case 'pointer_down' : 
 					  if(!button.pressed){
-					      button.pressed = true;					    
-					      ui.comp.anim_start(button.binded_press_anim);
-					      if(button.hasOwnProperty('on_pressed')){
-						  sprout(button.on_pressed);
+					      if(!button.animating){
+						  button.pressed = true;	
+						  button.animating = true;
+						  ui.comp.anim_start(button.binded_press_anim);
+						  if(button.hasOwnProperty('on_pressed')){
+//						      sprout(button.on_pressed);
+						  }						  
 					      }
 					  }
 					  break;
@@ -104,8 +109,7 @@ exports.init = function(env, context, send, react, sprout){
 				      case 'pointer_out':
 				      case 'pointer_up' :
 					  if(button.pressed){
-					      button.pressed = false;					    
-					      ui.comp.anim_start(button.binded_unpress_anim);		
+						  button.pressed = false;
 					  }
 					  break;
 				      }
