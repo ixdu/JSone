@@ -48,7 +48,7 @@ function service_env(uuid, context, mq, env){
 	    console.log('this service have no such method: ', name);
     }
 
-    this.react = function(msg_name, callback){
+    this.on = function(msg_name, callback){
 	msg_handlers[msg_name] = callback;
     }
     
@@ -72,7 +72,11 @@ exports.load = function(path, mq, env){
     var context = new context_constructor(uuid);
     var senv = new service_env(uuid, context, mq, env); 
     var service = require('../' + path + '.js');
-    service.init(env, context, senv.send, senv.react, senv.sprout);
+    service.init(env, { context : context, 
+			mq : mq,
+			send : senv.send, 
+			on : senv.on,
+			sprout : senv.sprout});
     mq.on_msg(uuid, senv.dispatch);
     return uuid;
 }

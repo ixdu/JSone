@@ -1,6 +1,14 @@
-function backends_read(){
+/*
+ * Storage service, one front end for diffent backends - local, srb, cloud, bittorrent etc
+ * 
+ */
+
+function backends_read(env, mq){
     var backends = {
+	srb  : env.dsa.service_loader('./dsa/services/storage_backends/srb', mq, env),
+	local : env.dsa.service_loader('./dsa/services/storage_backends/local', mq, env)
     }
+
     //читаем папку cloud_storage_backends и подгружаем бэкенды
     return backends;
 }
@@ -10,16 +18,15 @@ function verify_object_info(){
     return null;
 }
 
-exports.init = function(send, react){
-    var backends = backends_read();
-    return {
-	"in" : {
-	    "storage_info" : function(client){
-		send(client, 'storage_info', { "backends" : backends });	
-	    },
+exports.init = function(env, dsa){
+    var backends = backends_read(env);
+ /*   dsa.on("storage_info",
+	   function(client){
+	       send(client, 'storage_info', { "backends" : backends });	
+	   },
 	    ///вероятно сообщения нужно просто перенаправлять backend'у, так как отвечать же он сам будет
 	    //но пока оставлю, просто чтобы визуально ориентироваться
-	    "stat" : function(client, object_info){
+	   "stat" : function(client, object_info){
 		send(client, 'stat', backends[object_info.backend].stat(object_info));
 	    },
 	    "href" : function(client, object_info){
@@ -56,6 +63,6 @@ exports.init = function(send, react){
 	    "readed_data" : function(data){},
 //	    "clone" : function(object_info){} //object_info of new created object
  	}
-    }
+    }*/
 }
 
