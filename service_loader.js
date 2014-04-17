@@ -8,11 +8,11 @@ function context_constructor(service){
 
     this.set = function(key, value){
 	values[key] = value;
-    }
+    };
 
     this.get = function(key){
 	return values[key];
-    }
+    };
 }
 
 function service_env(uuid, context, mq, env){
@@ -24,7 +24,7 @@ function service_env(uuid, context, mq, env){
 	"get" : function(next, key){
 	    next(context.get(key));
 	}
-    }
+    };
 
     this.dispatch = function(msg){
 	var msg_env = msg.shift();
@@ -48,25 +48,23 @@ function service_env(uuid, context, mq, env){
 	    }
 	} else
 	    console.log('this service have no such method: ', name);
-    }
+    };
 
     this.on = function(msg_name, callback){
 	msg_handlers[msg_name] = callback;
-    }
+    };
     
     this.send = function(){
 	var _arguments = Array.prototype.slice.call(arguments);
 	var service_name = _arguments.shift();
 	_arguments.unshift(null); //setting sprout and stack data to null
 	mq.send(service_name, _arguments);
-    }
+    };
 
-    this.sprout = function(sprout, stack){
-	var seq = env.capsule.modules.sequence;
-	seq.mq_send = mq.send;	
-	seq.run(sprout, stack);
-    }
+    var seq = env.capsule.modules.sequence;
+    seq.mq_send = mq.send;
 
+    this.sprout = seq;
 }
 
 exports.load = function(path, mq, env){

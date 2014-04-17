@@ -82,11 +82,12 @@ exports.init = function(env, dsa){
 	       
 
 	       entries[entry._frame] = entry;
-	       console.log('entry is ', entry._frame);
+//	       console.log('entry is ', entry._frame);
 
-	       if(typeof(add_to_obj) == 'string' &&
-		  typeof(add_to_field) == 'string'){
-		   ui.comp.frame_add(stack[add_to_obj][add_to_field], entry._frame);
+	       if(stack['parent'] != undefined)
+		   ui.comp.frame_add(stack['parent'].frame, entry._frame);
+	       else {
+		   ui.comp.frame_add(0, entry._frame);
 	       }
 
 	       return {

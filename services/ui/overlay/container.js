@@ -11,7 +11,7 @@ exports.init = function(env, dsa){
     var containers = [];
 
     dsa.on("create",
-	   function(stack, info, obj, field){
+	   function(stack, info, parent){
 	       var container = {
 		   on_slide : function(){},
 		   sliding : false,
@@ -25,7 +25,7 @@ exports.init = function(env, dsa){
 	       container._frame1 = ui.comp.frame_create({
 							    x : '0%',
 							    y : '0%',
-							    width : '49%',
+							    width : '100%',
 							    height : '100%'
 							});
 
@@ -70,7 +70,7 @@ exports.init = function(env, dsa){
 		   ui.comp.anim_start(banim);		  
 	       }
 
-	       ui.comp.event_register(container._parent_frame, 'pointer_motion');
+//	       ui.comp.event_register(container._parent_frame, 'pointer_motion');
 	       ui.comp.event_register(container._parent_frame, 'pointer_up');
 	       ui.comp.event_register(container._parent_frame, 'pointer_out');
 	       ui.comp.event_register(container._parent_frame, 'pointer_down', function(eventName, eventData){
@@ -101,14 +101,18 @@ exports.init = function(env, dsa){
 				      });
 
 	       ui.comp.frame_add(container._parent_frame, container._frame1);
-	       ui.comp.frame_add(container._parent_frame, container._frame2);
-	       ui.comp.frame_add(stack[obj][field], container._parent_frame);
+//	       ui.comp.frame_add(container._parent_frame, container._frame2);
+	       if(stack['parent'] != undefined)
+		   ui.comp.frame_add(stack['parent'].frame, container._parent_frame);
+	       else {
+		   ui.comp.frame_add(0, container._parent_frame);
+	       }
+
+	       stack['parent'] = {
+		   frame : container._parent_frame
+	       }
 	       //	      ui.comp.anim_start(bsliding_anim_left);
 	       //	      ui.comp.anim_start(bsliding_anim_right);
 
-	       return {
-		   _frame1 : container._frame1,
-		   _frame2 : container._frame2
-	       };
 	   });
 }

@@ -12,7 +12,7 @@ exports.init = function(env, dsa){
     var buttons = [];
 
     dsa.on("create", 
-	   function(stack, info, add_to_obj, add_to_field){
+	   function(stack, info){
 	       var button = {
 		   pressed : false,
 		   animating : false
@@ -118,9 +118,10 @@ exports.init = function(env, dsa){
 	       
 	       buttons[button._frame] = button;
 	       
-	       if(typeof(add_to_obj) == 'string' &&
-		  typeof(add_to_field) == 'string'){
-		   ui.comp.frame_add(stack[add_to_obj][add_to_field], button._frame);
+	       if(stack['parent'] != undefined)
+		   ui.comp.frame_add(stack['parent'].frame, button._frame);
+	       else {
+		   ui.comp.frame_add(0, button._frame);
 	       }
 
 	       return {

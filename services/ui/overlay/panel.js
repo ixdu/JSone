@@ -190,16 +190,18 @@ exports.init = function(env, dsa){
 					  }
 				      });
 
-	       if(typeof(add_to_obj) == 'string' &&
-		  typeof(add_to_field) == 'string'){
-		   ui.comp.frame_add(stack[add_to_obj][add_to_field], panel._frame);
+	       if(stack['parent'] != undefined)
+		   ui.comp.frame_add(stack['parent'].frame, panel._frame);
+	       else {
+		   ui.comp.frame_add(0, panel._frame);
 	       }
 
-	       return {
-		   "_frame" : panel._frame,
-		   "maximized" : panel._maximized_frame,
-		   "minimized" : panel._minimized_frame
+	       stack['parent'] = {
+		   frame : panel._frame,
+		   maximimized : panel._maximized_frame,
+		   minimized : panel._minimized_frame
 	       };
+
 	   });
 
     dsa.on("add",

@@ -12,7 +12,7 @@ exports.init = function(env, dsa){
     var labels = [];
 
     dsa.on("create", 
-	   function(stack, info, add_to_obj, add_to_field){
+	   function(stack, info){
 	       var label = {
 		   text : 'label',
 		   image : null
@@ -53,9 +53,11 @@ exports.init = function(env, dsa){
 
 	       ui.comp.frame_add(label._frame, label.content);
 
-	       if(typeof(add_to_obj) == 'string' &&
-		  typeof(add_to_field) == 'string')
-		   ui.comp.frame_add(stack[add_to_obj][add_to_field], label._frame);
+	       if(stack['parent'] != undefined)
+		   ui.comp.frame_add(stack['parent'].frame, label._frame);
+	       else {
+		   ui.comp.frame_add(0, label._frame);
+	       }
 
 	       return {
 		   _frame : label._frame
