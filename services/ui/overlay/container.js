@@ -11,7 +11,7 @@ exports.init = function(env, dsa){
     var containers = [];
 
     dsa.on("create",
-	   function(stack, info, parent){
+	   function(sprout, stack, info, parent){
 	       var container = {
 		   on_slide : function(){},
 		   sliding : false,
@@ -111,8 +111,6 @@ exports.init = function(env, dsa){
 	       stack['parent'] = {
 		   frame : container._parent_frame
 	       }
-	       //	      ui.comp.anim_start(bsliding_anim_left);
-	       //	      ui.comp.anim_start(bsliding_anim_right);
-
+	       return false;
 	   });
 }

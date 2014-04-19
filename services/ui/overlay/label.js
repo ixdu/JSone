@@ -12,7 +12,7 @@ exports.init = function(env, dsa){
     var labels = [];
 
     dsa.on("create", 
-	   function(stack, info){
+	   function(sprout, stack, info){
 	       var label = {
 		   text : 'label',
 		   image : null
@@ -58,14 +58,10 @@ exports.init = function(env, dsa){
 	       else {
 		   ui.comp.frame_add(0, label._frame);
 	       }
-
-	       return {
-		   _frame : label._frame
-	       };
 	   });
     
     dsa.on("destroy",
-	   function(stack, id){
+	   function(sprout, stack, id){
 	       var label = labels[id];
 	       ui.comp.frame_remove(label.content);
 	       ui.comp.frame_destroy(label._frame);
@@ -77,7 +73,7 @@ exports.init = function(env, dsa){
 	   });
     
     dsa.on("update",
-	   function(stack, id, updating_info){
+	   function(sprout, stack, id, updating_info){
 	       //	      if(updating_info.hasOwnProperty('image')){
 	   });
 }

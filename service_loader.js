@@ -32,16 +32,14 @@ function service_env(uuid, context, mq, env){
 	if(msg_handlers.hasOwnProperty(name)){	    
 	    if(msg_env != null){
 		msg.unshift(msg_env.stack);
-		var value_to_push = msg_handlers[name].apply(null, msg);
-		if(msg_env.name)
-		    msg_env.stack[msg_env.name] = value_to_push;
-		else msg_env.stack.push(value_to_push);
-
-		var seq = env.capsule.modules.sequence;
-		//console.log(typeof(msg_env), msg_env, 'dd');
-		seq.mq_send = mq.send;
-//		console.log(JSON.stringify(msg_env.next));
-		seq.run(msg_env.next, msg_env.stack);
+		msg.unshift(msg_env.next);
+		if(!msg_handlers[name].apply(null, msg)){
+		    var seq = env.capsule.modules.sequence;
+//		    console.log(typeof(msg_env), msg_env, 'dd');
+		    seq.mq_send = mq.send;
+		    //		console.log(JSON.stringify(msg_env.next));
+		    seq.run(msg_env.next, msg_env.stack);		    
+		}
 	    } else {
 		msg.unshift(null);
 		msg_handlers[name].apply(null, msg);		    

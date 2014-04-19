@@ -11,7 +11,7 @@ exports.init = function(env, dsa){
     var entries = [];
 
     dsa.on("create",
-	   function(stack, info, add_to_obj, add_to_field){
+	   function(sprout, stack, info){
 	       var entry = {
 		   text : ''  
 	       };
@@ -89,21 +89,14 @@ exports.init = function(env, dsa){
 	       else {
 		   ui.comp.frame_add(0, entry._frame);
 	       }
-
-	       return {
-		   _frame : entry._frame  
-	       };
 	   });
 
-    //    dsa.on("be_added",
-    //	  function(stack, )
-
     dsa.on("update",
-	   function(stack, updating_info){
+	   function(sprout, stack, updating_info){
 	       
 	   });
 
     dsa.on("destroy",
-	   function(stack, id){
+	   function(sprout, stack, id){
 	   });
 }

@@ -12,7 +12,7 @@ exports.init = function(env, dsa){
     var buttons = [];
 
     dsa.on("create", 
-	   function(stack, info){
+	   function(sprout, stack, info){
 	       var button = {
 		   pressed : false,
 		   animating : false
@@ -123,14 +123,10 @@ exports.init = function(env, dsa){
 	       else {
 		   ui.comp.frame_add(0, button._frame);
 	       }
-
-	       return {
-		   _frame : button._frame  
-	       };
 	   });
     
     dsa.on("destroy",
-	   function(stack, id){
+	   function(sprout, stack, id){
 	       comp.frame_remove(button.frame, button.label);
 	       base_items.text.destroy(button.label);
 	       comp.frame_remove(button.frame, button.unpressed_bg);
@@ -145,7 +141,7 @@ exports.init = function(env, dsa){
 	   });
 
     dsa.on("update",
-	   function(stack, id, updating_info){
+	   function(sprout, stack, id, updating_info){
 	       
 	   });
 }

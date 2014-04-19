@@ -11,7 +11,7 @@ exports.init = function(env, dsa){
     var panels = [];
 
     dsa.on("create",
-	   function(stack, info, add_to_obj, add_to_field){
+	   function(sprout, stack, info, add_to_obj, add_to_field){
 	       var panel = {
 		   position : "top",
 		   on_slide : function(){},
@@ -205,12 +205,12 @@ exports.init = function(env, dsa){
 	   });
 
     dsa.on("add",
-	   function(stack, id, child){
+	   function(sprout, stack, id, child){
 	       ui.comp.frame_add(id, child); 
 	   });
 
     dsa.on("update",
-	   function(stack, id, updating_info){
+	   function(sprout, stack, id, updating_info){
 	       
 	   });
 
