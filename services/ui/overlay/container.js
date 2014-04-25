@@ -11,7 +11,7 @@ exports.init = function(env, dsa){
     var containers = [];
 
     dsa.on("create",
-	   function(sprout, stack, info, parent){
+	   function(sprout, stack, info){
 	       var container = {
 		   on_slide : function(){},
 		   sliding : false,
@@ -58,11 +58,10 @@ exports.init = function(env, dsa){
 		   anim_proto[0].actions.x = offset;
 		   container.x += offset;
 		   
-		   console.log(offset);
 		   if(typeof(move_animations['xr' + offset]) == 'undefined'){
 		       move_animations['xr' + offset] = anim = ui.comp.anim_create(anim_proto);
 		       move_animations['bxr' +  offset] = banim = ui.comp.anim_bind(container._parent_frame, anim);
-		       console.log('banim is', anim);
+//		       console.log('banim is', anim);
 		       ui.comp.event_register(banim, 'animation_stopped');		      
 		   } else
 		       banim = move_animations['bxr' + offset];
@@ -110,7 +109,6 @@ exports.init = function(env, dsa){
 
 	       stack['parent'] = {
 		   frame : container._parent_frame
-	       }
-	       return false;
+	       };
 	   });
 }

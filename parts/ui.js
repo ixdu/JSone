@@ -12,7 +12,7 @@ exports.get = function(env){
 
     var _comp = env.capsule.modules.ui.Compositer.create();
     _comp.events_callback_set(function (elementId, eventName, eventData) {
-				  console.log("event is happend", elementId, eventName);
+//				  console.log("event is happend", elementId, eventName);
 			      });
 
     return ui = {

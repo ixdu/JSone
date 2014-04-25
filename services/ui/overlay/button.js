@@ -7,7 +7,6 @@
  */
 
 exports.init = function(env, dsa){
-
     var ui = env.dsa.parts.ui.get(env);
     var buttons = [];
 
@@ -81,7 +80,6 @@ exports.init = function(env, dsa){
 	       ui.comp.event_register(button.binded_press_anim, 'animation_stopped');
 	       ui.comp.event_register(button.unpressed_bg, 'pointer_up', function(eventName, eventData){
 					  if(eventName == 'animation_stopped') {			
-					      console.log('eehhhh');
 					      button.animating = false;
 					  }
 				      });
@@ -90,7 +88,7 @@ exports.init = function(env, dsa){
 	       ui.comp.event_register(button._frame, 'pointer_down', function(eventName, eventData){
 					  switch(eventName){
 					  case 'animation_stopped' :
-					      console.log('eehhhh');
+//					      console.log('eehhhh');
 					      button.animating = false;
 					      break;
 					  case 'pointer_down' : 
@@ -100,7 +98,7 @@ exports.init = function(env, dsa){
 						      button.animating = true;
 						      ui.comp.anim_start(button.binded_press_anim);
 						      if(button.hasOwnProperty('on_pressed')){
-							  //						      sprout(button.on_pressed);
+							  dsa.sprout.run(button.on_pressed);
 						      }						  
 						  }
 					      }
@@ -121,6 +119,7 @@ exports.init = function(env, dsa){
 	       if(stack['parent'] != undefined)
 		   ui.comp.frame_add(stack['parent'].frame, button._frame);
 	       else {
+		   console.log('eeeetoooot');
 		   ui.comp.frame_add(0, button._frame);
 	       }
 	   });
