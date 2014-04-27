@@ -6,29 +6,8 @@
  * events: slide
  */
 
-exports.init = function(env, dsa){
-    var ui = env.dsa.parts.ui.get(env);
-    var containers = [];
-
-    dsa.on("create",
-	   function(sprout, stack, info){
-	       var container = {
-		   on_slide : function(){},
-		   sliding : false,
-		   x : 0,
-		   prev_x : 0,
-		   animating : false
-	       };
-
-	       container._parent_frame = ui.comp.frame_create(info);
-
-	       container._frame1 = ui.comp.frame_create({
-							    x : '0%',
-							    y : '0%',
-							    width : '100%',
-							    height : '100%'
-							});
-
+//history, animated part, two and more work frame
+/*
 	       container._frame2 = ui.comp.frame_create({
 							    x : '50%',
 							    y : '0%',
@@ -98,17 +77,83 @@ exports.init = function(env, dsa){
 					      break;
 					  }
 				      });
+*/
 
-	       ui.comp.frame_add(container._parent_frame, container._frame1);
+
+exports.init = function(env, dsa){
+    var ui = env.dsa.parts.ui.get(env);
+    var containers = [];
+
+    dsa.on("create",
+	   function(sprout, stack, info){
+	       var container = {
+//		   on_slide : function(){},
+//		   sliding : false,
+//		   x : 0,
+//		   prev_x : 0,
+//		   animating : false,
+		   childs : []
+	       };
+
+	       container._main_frame = ui.comp.frame_create(info);
+
+	       container._frame1 = ui.comp.frame_create({
+							    x : '0%',
+							    y : '0%',
+							    width : '100%',
+							    height : '100%'
+							});
+	       ui.comp.frame_add(container._main_frame, container._frame1);
 //	       ui.comp.frame_add(container._parent_frame, container._frame2);
-	       if(stack['parent'] != undefined)
-		   ui.comp.frame_add(stack['parent'].frame, container._parent_frame);
-	       else {
-		   ui.comp.frame_add(0, container._parent_frame);
+	       if(stack['parent'] != undefined){
+		   container.parent = stack.parent;
+	       } else {
+		   container.parent = { frame : 0 };
 	       }
+	       
+	       ui.comp.frame_add(container.parent.frame, container._main_frame);
 
 	       stack['parent'] = {
-		   frame : container._parent_frame
+		   frame : container._main_frame
 	       };
+	       
+	       containers[container._main_frame] = container;
 	   });
-}
+    
+    dsa.on('add_child', 
+	   function(sprout, stack, type, id){
+	       childs[id] = type;
+	   });
+    
+    dsa.on('destroy', 
+	   function(sprout, stack, id){
+	       var container_frame = typeof(id) !== 'undefined' ? id.frame : stack.parent.frame;
+	       var ui = env.dsa.parts.ui.get(env),
+	           container = containers[container_frame],
+	           adisappear = ui.comp.anim_create([
+							{
+							    duration : 700,
+							    actions : {
+								opacity : 100
+							    }
+							}
+						    ]),
+	           badisappear = ui.comp.anim_bind(container._main_frame, adisappear);
+	       
+	       ui.comp.event_register(badisappear, 'animation_stopped');
+	       ui.comp.event_register(container._main_frame, 'animation_stopped', 
+				      function(eventName, eventData){
+					  ui.comp.frame_remove(container._main_frame);
+					  
+					  ui.comp.frame_destroy(container._main_frame);
+					  //	       for(child_id in container.childs){
+					  //		   dsa.send()
+					  //	       }
+					  stack.parent = container.parent;
+					  dsa.sprout.run(sprout, stack);
+				      });
+	       ui.comp.anim_start(badisappear);
+	       return true;
+//	       alert('приветеге');
+	   });
+};
