@@ -17,19 +17,19 @@ function context_constructor(service){
 
 function service_env(uuid, context, mq, env){
     var msg_handlers = {
-	"set" : function(next, key, value){
+	"set" : function(sprout, stack, key, value){
 //	    console.log(value);
 	    context.set(key, value);
 	},
-	"get" : function(next, key){
-	    next(context.get(key));
+	"get" : function(sprout, stack, key){
+	    stack[key] = context.get(key);
 	}
     };
 
     this.dispatch = function(msg){
 	var msg_env = msg.shift();
 	var name = msg.shift();
-	if(msg_handlers.hasOwnProperty(name)){	    
+	if(msg_handlers.hasOwnProperty(name)){
 	    if(msg_env != null){
 		msg.unshift(msg_env.stack);
 		msg.unshift(msg_env.next);

@@ -26,7 +26,7 @@ exports.init = function(env, dsa){
 	       ui.comp.button_get_control(button._item).on_pressed(
 		   function(){
 		       if(button.hasOwnProperty('on_pressed')){
-			   dsa.sprout.run(button.on_pressed);
+			   dsa.sprout.run(button.on_pressed, stack);
 		       }						  
 		   });
 	       

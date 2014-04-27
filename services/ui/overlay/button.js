@@ -98,7 +98,7 @@ exports.init = function(env, dsa){
 						      button.animating = true;
 						      ui.comp.anim_start(button.binded_press_anim);
 						      if(button.hasOwnProperty('on_pressed')){
-							  dsa.sprout.run(button.on_pressed);
+							  dsa.sprout.run(button.on_pressed, stack);
 						      }						  
 						  }
 					      }
