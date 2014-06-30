@@ -79,54 +79,64 @@
 				      });
 */
 
+var ui, containers;
 
-exports.init = function(env, dsa){
-    var ui = env.dsa.parts.ui.get(env);
-    var containers = [];
+function sprout_item(){
+    this.sprout = function(){
+	console.log(arguments);	
+	return {
+	    run : function(){}
+	}
+    };
+}
 
-    dsa.on("create",
-	   function(sprout, stack, info){
-	       var container = {
-//		   on_slide : function(){},
-//		   sliding : false,
-//		   x : 0,
-//		   prev_x : 0,
-//		   animating : false,
-		   childs : []
-	       };
+module.exports = function(info, dsa, stack){
+    if(typeof ui == 'undefined'){
+	ui = env.dsa.parts.get(env);
+	containers = [];	
+    }
 
-	       container._main_frame = ui.comp.frame_create(info);
+    this.prototype = new sprout_item();
+    if(typeof stack == 'undefined')
+	stack = [];
 
-	       container._frame1 = ui.comp.frame_create({
-							    x : '0%',
-							    y : '0%',
-							    width : '100%',
-							    height : '100%'
-							});
-	       ui.comp.frame_add(container._main_frame, container._frame1);
-//	       ui.comp.frame_add(container._parent_frame, container._frame2);
-	       if(stack['parent'] != undefined){
-		   container.parent = stack.parent;
-	       } else {
-		   container.parent = { frame : 0 };
-	       }
+    var container = {
+	//		   on_slide : function(){},
+	//		   sliding : false,
+	//		   x : 0,
+	//		   prev_x : 0,
+	//		   animating : false,
+	childs : []
+    };
+
+    container._main_frame = ui.comp.frame_create(info);
+
+    container._frame1 = ui.comp.frame_create({
+						 x : '0%',
+						 y : '0%',
+						 width : '100%',
+						 height : '100%'
+					     });
+    ui.comp.frame_add(container._main_frame, container._frame1);
+    //	       ui.comp.frame_add(container._parent_frame, container._frame2);
+    if(stack['parent'] != undefined){
+	container.parent = stack.parent;
+    } else {
+	container.parent = { frame : 0 , 
+			     geometry : ui.comp.elem_get_geometry(0, true)
+			   };
+    }
 	       
-	       ui.comp.frame_add(container.parent.frame, container._main_frame);
+    ui.comp.frame_add(container.parent.frame, container._main_frame);
+    
+    stack['parent'] = {
+	frame : container._main_frame,
+	geometry : ui.comp.elem_get_geometry(container._main_frame, true)
+    };
+    
+    containers[container._main_frame] = container;
 
-	       stack['parent'] = {
-		   frame : container._main_frame
-	       };
-	       
-	       containers[container._main_frame] = container;
-	   });
-    
-    dsa.on('add_child', 
-	   function(sprout, stack, type, id){
-	       childs[id] = type;
-	   });
-    
-    dsa.on('destroy', 
-	   function(sprout, stack, id){
+    this.destroy = function(){
 	       var container_frame = typeof(id) !== 'undefined' ? id.frame : stack.parent.frame;
 	       var ui = env.dsa.parts.ui.get(env),
 	           container = containers[container_frame],
@@ -153,7 +163,10 @@ exports.init = function(env, dsa){
 					  dsa.sprout.run(sprout, stack);
 				      });
 	       ui.comp.anim_start(badisappear);
-	       return true;
-//	       alert('приветеге');
-	   });
+	       return true;	
+    };
+
+    this.add = function(child){
+//	       childs[id] = type;	
+    };
 };
