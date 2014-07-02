@@ -7,15 +7,14 @@
 
 var ui = null;
 
-exports.get = function(env){
+exports.get = function(){
     if(ui != null)
 	return ui;
 
-    var _comp = env.capsule.modules.ui.Compositer.create();
- 
+    var _comp = require('../../modules/ui/Compositer.js').create();
     return ui = {
 	comp : _comp,
-	base_items : env.capsule.modules.ui.base_items.create(_comp)	
+	base_items : require('../../modules/ui/base_items.js').create(_comp)	
     };
 };
 

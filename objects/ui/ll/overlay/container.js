@@ -79,28 +79,24 @@
 				      });
 */
 
-var ui, containers;
+var ui, containers = [];
 
 function sprout_item(){
     this.sprout = function(){
 	console.log(arguments);	
 	return {
 	    run : function(){}
-	}
+	};
     };
 }
 
 module.exports = function(info, dsa, stack){
-    if(typeof ui == 'undefined'){
-	ui = env.dsa.parts.get(env);
-	containers = [];	
-    }
+    if(typeof ui == 'undefined')
+	ui = require('../../../../parts/ui.js').get();
 
     this.prototype = new sprout_item();
-    if(typeof stack == 'undefined')
-	stack = [];
-
-    var container = {
+    
+    var container = this.container = {
 	//		   on_slide : function(){},
 	//		   sliding : false,
 	//		   x : 0,
@@ -137,36 +133,36 @@ module.exports = function(info, dsa, stack){
     containers[container._main_frame] = container;
 
     this.destroy = function(){
-	       var container_frame = typeof(id) !== 'undefined' ? id.frame : stack.parent.frame;
-	       var ui = env.dsa.parts.ui.get(env),
-	           container = containers[container_frame],
-	           adisappear = ui.comp.anim_create([
-							{
-							    duration : 700,
-							    actions : {
-								opacity : 100
-							    }
-							}
-						    ]),
-	           badisappear = ui.comp.anim_bind(container._main_frame, adisappear);
-	       
-	       ui.comp.event_register(badisappear, 'animation_stopped');
-	       ui.comp.event_register(container._main_frame, 'animation_stopped', 
-				      function(eventName, eventData){
-					  ui.comp.frame_remove(container._main_frame);
-					  
-					  ui.comp.frame_destroy(container._main_frame);
-					  //	       for(child_id in container.childs){
-					  //		   dsa.send()
-					  //	       }
-					  stack.parent = container.parent;
-					  dsa.sprout.run(sprout, stack);
-				      });
-	       ui.comp.anim_start(badisappear);
-	       return true;	
+	var container_frame = typeof(id) !== 'undefined' ? id.frame : stack.parent.frame,
+	container = containers[container_frame],
+	adisappear = ui.comp.anim_create([
+					     {
+						 duration : 700,
+						 actions : {
+						     opacity : 100
+						 }
+					     }
+					 ]),
+	badisappear = ui.comp.anim_bind(container._main_frame, adisappear);
+	
+	ui.comp.event_register(badisappear, 'animation_stopped');
+	ui.comp.event_register(container._main_frame, 'animation_stopped', 
+			       function(eventName, eventData){
+				   ui.comp.frame_remove(container._main_frame);
+				   
+				   ui.comp.frame_destroy(container._main_frame);
+				   //	       for(child_id in container.childs){
+				   //		   dsa.send()
+				   //	       }
+				   stack.parent = container.parent;
+//				   dsa.sprout.run(sprout, stack);
+			       });
+	ui.comp.anim_start(badisappear);
+	return true;	
     };
 
     this.add = function(child){
+//	ui.frame_add(this.container)
 //	       childs[id] = type;	
     };
 };
