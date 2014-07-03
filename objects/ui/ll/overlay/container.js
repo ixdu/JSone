@@ -97,6 +97,7 @@ module.exports = function(info, dsa, stack){
     this.prototype = new sprout_item();
     
     var container = this.container = {
+	on_destroy : info.hasOwnProperty('on_destroy') ? info.on_destroy : null,
 	//		   on_slide : function(){},
 	//		   sliding : false,
 	//		   x : 0,
@@ -137,7 +138,7 @@ module.exports = function(info, dsa, stack){
 	container = containers[container_frame],
 	adisappear = ui.comp.anim_create([
 					     {
-						 duration : 700,
+						 duration : 300,
 						 actions : {
 						     opacity : 100
 						 }
@@ -155,7 +156,8 @@ module.exports = function(info, dsa, stack){
 				   //		   dsa.send()
 				   //	       }
 				   stack.parent = container.parent;
-//				   dsa.sprout.run(sprout, stack);
+				   if(container.on_destroy != null)
+				       container.on_destroy(stack);
 			       });
 	ui.comp.anim_start(badisappear);
 	return true;	
