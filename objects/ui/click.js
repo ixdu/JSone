@@ -25,12 +25,14 @@ module.exports = function(info, dsa, stack){
     
     stack['part'] = this.part = {
 	label : info.label,
+	on_press : info.on_press,
 	width : (info.width * block_size.width),
 	height : (info.height * block_size.height)
     };
     
     if(info.hasOwnProperty('row'))
 	stack.part.row = info.row;
+
     stack.card.alloc_space(stack);
 
     var info = stack.part;
@@ -39,13 +41,9 @@ module.exports = function(info, dsa, stack){
     info.x = stack.part_position.x  + 'px';
     info.y = stack.part_position.y  + 'px';
 
-    stack.part.label = info.label;
-    alert(info.label);
-    stack.part.on_press = info.on_press;
-    
     this.part.button = new ui.lowlevel.button(stack.part, null, stack);
 
-    dsa.on('part_delete',
-	  function(sprout,stack, id){
-	  });
+    this.delete = function(){
+	
+    };
 };

@@ -21,16 +21,18 @@ module.exports = function(info, dsa, stack){
     id = uuid.generate_str(),
     card = this.card = {
 	geometry : {
-	    x : typeof cur_card == 'undefined' ? 0 : 
-		cur_card.geometry.x + cur_card.geometry.width > 800 ? 0 :
-		cur_card.geometry.x + cur_card.geometry.width
-		+ 'px',
-	    y : typeof cur_card == 'undefined' ? 0 : 
-		cur_card.geometry.y + cur_card.geometry.height > 500 ? 0 :
-		cur_card.geometry.y + cur_card.geometry.height
-		+ 'px',
-	    width : '100%', //нужно менять свой размер в card_alloc_space
-	    height : '100%'
+	    x : '10%',
+	    y : '10%',
+//	    x : typeof cur_card == 'undefined' ? 0 : 
+//		cur_card.geometry.x + cur_card.geometry.width > 800 ? 0 :
+//		cur_card.geometry.x + cur_card.geometry.width
+//		+ 'px',
+//	    y : typeof cur_card == 'undefined' ? 0 : 
+//		cur_card.geometry.y + cur_card.geometry.height > 500 ? 0 :
+//		cur_card.geometry.y + cur_card.geometry.height
+//		+ 'px',
+	    width : '80%', //нужно менять свой размер в card_alloc_space
+	    height : '80%'
 	},
 	prev_sprout : [],
 	sprout : [],
@@ -56,7 +58,7 @@ module.exports = function(info, dsa, stack){
     card.container = new ui.lowlevel.container(card.geometry, null, stack);
     
     this.alloc_space = function(stack){
-	var card = stack['card'];
+	var card = stack['card'].card;
 	var block_size = ui.block_size;
 	
 	stack['part_position'] = {};
@@ -75,8 +77,7 @@ module.exports = function(info, dsa, stack){
 		card.cur_offset_y += part_height;
 		card.height += part_height;
 	    }		   
-	}
-	else {
+	} else {
 	    card.cur_part_y = card.cur_offset_y;
 	    card.cur_offset_y += part_height;
 	    card.height += part_height;
@@ -89,6 +90,7 @@ module.exports = function(info, dsa, stack){
 	
     };
 
-    this.delete = function(){
+    this.destroy = function(){
+	this.card.container.destroy();
     };    
 };

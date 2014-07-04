@@ -14,6 +14,7 @@ module.exports = function(info, dsa, stack){
     };
     
     stack['part'] = this.part = {
+	on_text_change : info.on_text_change,
 	placeholder : info.advertisement,
 	width : (info.width * block_size.width),
 	height : (info.height * block_size.height)
@@ -29,13 +30,12 @@ module.exports = function(info, dsa, stack){
     info.x = stack.part_position.x  + 'px';
     info.y = stack.part_position.y  + 'px';
 
-    stack.part.placeholder = info.placeholder;
-
-    stack.part.on_text_change = info.on_text_change;
-    
     this.part.entry = new ui.lowlevel.entry(stack.part, null, stack);
+    this.get_value = this.part.entry.get_value;
+    this.set_value = this.part.entry.set_value;
+    this.set_placeholder = this.part.entry.set_placeholder;
 
-    dsa.on('part_delete',
-	  function(sprout,stack, id){
-	  });
+    this.delete = function(){
+	
+    };
 };

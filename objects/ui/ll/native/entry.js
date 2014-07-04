@@ -32,7 +32,7 @@ module.exports = function(info, dsa, stack){
 					});
     
     ui.comp.frame_add(entry._frame, entry._entry);
-    ui.comp.entry_get_control(entry._entry).on_text_change(function(text){
+    (entry.control = ui.comp.entry_get_control(entry._entry)).on_text_change(function(text){
 							       entry.on_text_change(text);
 							   });
     
@@ -43,6 +43,10 @@ module.exports = function(info, dsa, stack){
     else {
 	ui.comp.frame_add(0, entry._frame);
     }
+
+    this.get_value = entry.control.get_value;
+    this.set_value = entry.control.set_value;
+    this.set_placeholder = entry.control.set_placeholder;
 
     this.destroy = function(){
     };

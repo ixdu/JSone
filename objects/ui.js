@@ -66,24 +66,11 @@ exports.block_size_ask = function(callback){
 		      height : '30px',
 		      label : 'Такой',
 		      on_press : function(){
-			  alert('uhaha');
 			  exports.block_size = { width : 120, 
 						 height : 30 };
 			  _finish_ask();
 		      }
 		  }, null ,stack);
-    new ll.entry({
-		     x : '20%',
-		     y : '30px',
-		     width : '120px',
-		     height : '30px',
-		     placeholder : 'сякой',
-		     on_text_change : function(){
-			 exports.block_size = { width : 120, 
-						height : 30 };
-			 _finish_ask();
-		     }
-		 }, null ,stack);
 
     new ll.button({
 		      x : '0%',
