@@ -1,3 +1,8 @@
+/*
+ * lowlevel service loader from files
+ */
+
+var sequence = require('../modules/sequence.js');
 //uuid of all dsa instance equal to
 var dsa_uuid = '000000000000002';
 
@@ -34,7 +39,7 @@ function service_env(uuid, context, mq, env){
 		msg.unshift(msg_env.stack);
 		msg.unshift(msg_env.next);
 		if(!msg_handlers[name].apply(null, msg)){
-		    var seq = env.capsule.modules.sequence;
+		    var seq = sequence;
 //		    console.log(typeof(msg_env), msg_env, 'dd');
 		    seq.mq_send = mq.send;
 		    //		console.log(JSON.stringify(msg_env.next));
@@ -59,22 +64,22 @@ function service_env(uuid, context, mq, env){
 	mq.send(service_name, _arguments);
     };
 
-    var seq = env.capsule.modules.sequence;
+    var seq = sequence;
     seq.mq_send = mq.send;
 
     this.sprout = seq;
 }
 
-exports.load = function(path, mq, env){
-    var uuid = env.capsule.modules.uuid.generate_str();
+exports.load = function(path, mq){
+    var uuid = require('../modules/uuid.js').generate_str();
     var context = new context_constructor(uuid);
-    var senv = new service_env(uuid, context, mq, env); 
+    var senv = new service_env(uuid, context, mq); 
     var service = require('../' + path + '.js');
-    service.init(env, { context : context, 
-			mq : mq,
-			send : senv.send, 
-			on : senv.on,
-			sprout : senv.sprout});
+    service.init({ context : context, 
+		   mq : mq,
+		   send : senv.send, 
+		   on : senv.on,
+		   sprout : senv.sprout});
     mq.on_msg(uuid, senv.dispatch);
     return uuid;
-}
+};

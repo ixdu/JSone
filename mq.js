@@ -1,15 +1,17 @@
-exports.create = function(capsule){
-    var transport = capsule.modules.transport;
+var transport = require('../modules/transport.js'),
+uuid = require('../modules/uuid.js');
+
+exports.create = function(){
     var known_nodes = [];
     var callbacks = {};
     var sockets = [];
     var listened = [];
     var addrs_to_listen = [];
 
-    var self_uuid = capsule.modules.uuid.generate_str();
+    var self_uuid = uuid.generate_str();
     
     function _node_add(context, type){
-	var socket = transport[context.transport].create(context, transport.features.client, capsule);
+	var socket = require('../modules/transport/' + [context.transport] + '.js').create(context, transport.features.client);
 	socket.on_msg(function(msg){
 			_dispatch(transport, context, msg);
 		    });
@@ -48,7 +50,7 @@ exports.create = function(capsule){
 
 	var transport = _find_closer(msg.id);
 	if(transport)
-	    transport.send(msg)
+	    transport.send(msg);
 	else {
 	    for(ind in sockets){
 		sockets[ind].send(msg);
@@ -92,14 +94,14 @@ exports.create = function(capsule){
 	    addrs_to_listen = arguments;
 	    for(ind in arguments){
 		var context = arguments[ind];
-		var _listened = transport[context.transport].create(context, transport.features.server, capsule);
+		var _listened = require('../modules/transport/' + [context.transport] + '.js').create(context, transport.features.server);
 		_listened.on_connect(function(socket){
 					 sockets.push(socket);
 					 //на отключение и ошибки надо поставить обработчик, чтобы убирать за собой
 					 //					 socket.on_disconected()
 					 socket.on_msg(function(msg){
 							   _dispatch(socket, context, msg);
-						       })
+						       });
 				     });
 
 		listened.push(_listened);
@@ -127,6 +129,6 @@ exports.create = function(capsule){
 	"send" : function(uuid, msg){
 	    _send(uuid, msg, null, 1);
 	}	
-    }
+    };
 }
 
