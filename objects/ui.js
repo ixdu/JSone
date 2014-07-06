@@ -19,6 +19,7 @@ function hl_init(){
     return {
 	card : require('./ui/card.js'),
 	menu : require('./ui/menu.js'),
+	text : require('./ui/text.js'),
         click : require('./ui/click.js'),
 	entry : require('./ui/entry.js')	
     };

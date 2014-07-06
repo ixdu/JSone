@@ -9,39 +9,15 @@
  */
 
 var uuid = require('../../../modules/uuid.js'),
-ui = require('../ui.js');
+ui = require('../ui.js'),
+part = require('part.js');
 
 module.exports = function(info, dsa, stack){
-    var block_size = ui.block_size;
-    
-    if(!info.hasOwnProperty('width')){
-	console.log('width of part is not setted');
-	return false;
-    };
-    if(!info.hasOwnProperty('height')){
-	console.log('height of part is not setted');
-	return false;
-    };
-    
-    stack['part'] = this.part = {
-	label : info.label,
-	on_press : info.on_press,
-	width : (info.width * block_size.width),
-	height : (info.height * block_size.height)
-    };
-    
-    if(info.hasOwnProperty('row'))
-	stack.part.row = info.row;
-
-    stack.card.alloc_space(stack);
-
-    var info = stack.part;
-    info.width += 'px';
-    info.height += 'px';
-    info.x = stack.part_position.x  + 'px';
-    info.y = stack.part_position.y  + 'px';
-
-    this.part.button = new ui.lowlevel.button(stack.part, null, stack);
+    var new_info = this.part = part(info, null, stack);
+    new_info.label = info.label;
+    new_info.on_press = info.on_click;
+ 
+    this.part.button = new ui.lowlevel.button(new_info, null, stack);
 
     this.delete = function(){
 	
