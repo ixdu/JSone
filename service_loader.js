@@ -21,13 +21,21 @@ function context_constructor(service){
 }
 
 function service_env(uuid, context, mq, env){
-    var msg_handlers = {
-	"set" : function(sprout, stack, key, value){
+    var msg_handlers = this.handlers = {
+	set : function(sprout, stack, key, value){
 //	    console.log(value);
 	    context.set(key, value);
 	},
-	"get" : function(sprout, stack, key){
+	get : function(sprout, stack, key){
 	    stack[key] = context.get(key);
+	},
+	introspect : function(){
+	    var spec = [];
+	    for(key in this){
+		if(typeof this[key] == 'function')
+		    spec.push(key);
+	    }
+	    return spec;
 	}
     };
 
@@ -70,7 +78,7 @@ function service_env(uuid, context, mq, env){
     this.sprout = seq;
 }
 
-exports.load = function(path, mq){
+exports.load = function(path, mq, lowlevel){
     var uuid = require('../modules/uuid.js').generate_str();
     var context = new context_constructor(uuid);
     var senv = new service_env(uuid, context, mq); 
@@ -81,5 +89,8 @@ exports.load = function(path, mq){
 		   on : senv.on,
 		   sprout : senv.sprout});
     mq.on_msg(uuid, senv.dispatch);
-    return uuid;
+    if(typeof(lowlevel) != undefined)
+	return [senv, uuid];
+    else
+	return uuid;
 };
