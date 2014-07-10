@@ -3,15 +3,15 @@
  *  
  */
 
-var seq = require('../modules/sequence.js'),
+var seq = exports.seq = require('../modules/sequence.js'),
 sloader = require('service_loader.js'),
 mq  = exports.mq = (require('mq.js')).create();
 
 exports.init = function(urls){
 //    alert(mq.send);
     mq.activate({"transport" : "direct", "url": "blahe" },
-		     {"transport" : "direct", "url": "blahc" }
-		    );
+		{"transport" : "direct", "url": "blahc" }
+	       );
 //    mqnode2.activate({"transport" : "direct", "url": "blaha" },
 //		     {"transport" : "direct", "url": "blahh" }
 //		    );
@@ -26,12 +26,14 @@ exports.get = function(service_path){
     spec = senv_and_id[0].handlers.introspect(),
     object = {};
     for(key in spec){
-	object[key] = function(){
-	    var _arguments = Array.prototype.slice.call(arguments);
-	    _arguments.unshift(key);
-	    _arguments.unshift(senv_and_id[1]);
-	    seq.msg.apply(seq.msg, _arguments);
-	};
+	(function(key){
+	     object[key] = function(){
+		 var _arguments = Array.prototype.slice.call(arguments);
+		 _arguments.unshift(key);
+		 _arguments.unshift(senv_and_id[1]);
+		 return seq.msg.apply(seq, _arguments);
+	     };
+	 })(spec[key]);
     }
     object.id = senv_and_id[1];
 

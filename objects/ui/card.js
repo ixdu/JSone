@@ -10,49 +10,71 @@ var uuid = require('../../../modules/uuid.js');
 var ui = require('../ui.js');
 
 var root,
-    prev_card,
-    cur_card,
-    cur_layer,
     cards = {},
-    cur_x = 0;
+    cur_card;
 
 module.exports = function(info, dsa, stack){
     var block_size = stack.block_size,
     id = uuid.generate_str(),
-    card = this.card = {
+    card = this.card = cur_card = {
+	name : info.name,
 	geometry : {
 	    x : '10%',
 	    y : '10%',
-//	    x : typeof cur_card == 'undefined' ? 0 : 
-//		cur_card.geometry.x + cur_card.geometry.width > 800 ? 0 :
-//		cur_card.geometry.x + cur_card.geometry.width
-//		+ 'px',
-//	    y : typeof cur_card == 'undefined' ? 0 : 
-//		cur_card.geometry.y + cur_card.geometry.height > 500 ? 0 :
-//		cur_card.geometry.y + cur_card.geometry.height
-//		+ 'px',
 	    width : '80%', //нужно менять свой размер в card_alloc_space
 	    height : '80%'
 	},
-	prev_sprout : [],
-	sprout : [],
 	cur_offset_x : 0,
 	cur_offset_y : 0,
-	cur_part_y : 0
-    };
+	cur_part_y : 0,
+
+	prev : [],
+	next : null
+    },
+    card_obj = this;
     
     cards[id] = card;
     
-    if(typeof(cur_card) != 'undefined'){
-	if(typeof(prev_card) != 'undefined')
-	    prev_card.prev_sprout.push(cur_card);
-	prev_card = cur_card;
-	cur_card.sprout.push(card);
-	card.prev_sprout.push(cur_card);		   
+    if(!stack.hasOwnProperty('card')){
+//	alert(stack['card']);
+	//adding controls for card navigating
+	new ui.lowlevel.label({
+				  x : '40%',
+				  y : '92%',
+				  width : '20%',
+				  height : '7%',
+				  text : info.name
+			      }, null, stack);
+	new ui.lowlevel.button({ 
+				   x : '60%',
+				   y : '92%',
+				   width : '10%',
+				   height : '7%',
+				   label : 'next',
+				   on_press : function(){
+				       if(cur_card.next != null){
+					   card_obj.hide();
+					   cur_card.next.make_current(null, stack);				
+				       }
+				   }
+			       }, null, stack);
+	new ui.lowlevel.button({ 
+				   x : '30%',
+				   y : '92%',
+				   width : '10%',
+				   height : '7%',
+				   label : 'prev',
+				   on_press : function(){
+				       if(cur_card.prev.length){	
+					   card_obj.hide();
+					   cur_card.prev[0].make_current(null, stack);			   
+				       }
+				   }
+			       }, null, stack);
+    } else {
+	card.prev.push(stack.card);
+	stack.card.card.next = this;
     }
-    
-    cur_card = card;
-    
     stack['card'] = this;
     
     card.container = new ui.lowlevel.container(card.geometry, null, stack);
@@ -91,6 +113,16 @@ module.exports = function(info, dsa, stack){
     };
 
     this.destroy = function(){
+//	if(stack.card == this)
+//	    stack.card = undefined; //need replace with prev card
+
 	this.card.container.destroy();
     };    
+
+    this.hide = function(dsa, stack){
+	
+    };
+
+    this.make_current = function(dsa, stack){
+    };
 };
