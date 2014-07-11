@@ -9,18 +9,35 @@
 var uuid = require('../../../modules/uuid.js');
 var ui = require('../ui.js');
 
+function left_up_slide_animate(ui_item){
+    var anim_slide = new ui.lowlevel.animation([
+						   {
+						       duration : 300,
+						       actions : {
+							   x : -90,
+							   y : -90
+						       }
+						   }
+					       ],
+					       ui_item, null, []);
+    anim_slide.start();
+}
+
 var root,
     cards = {},
-    cur_card;
+    cur_card,
+    prev_card;
 
 module.exports = function(info, dsa, stack){
+    prev_card = typeof cur_card != 'undefined' ? cur_card : undefined;
+
     var block_size = stack.block_size,
     id = uuid.generate_str(),
     card = this.card = cur_card = {
 	name : info.name,
 	geometry : {
-	    x : '10%',
-	    y : '10%',
+	    x : '100%',
+	    y : '100%',
 	    width : '80%', //нужно менять свой размер в card_alloc_space
 	    height : '80%'
 	},
@@ -34,30 +51,32 @@ module.exports = function(info, dsa, stack){
     card_obj = this;
     
     cards[id] = card;
-    
-    if(!stack.hasOwnProperty('card')){
-//	alert(stack['card']);
+    stack.parent = undefined; //too lowlevel
+    card.container = new ui.lowlevel.container(card.geometry, null, stack);
+
+    if(typeof stack['card'] == 'undefined'){
 	//adding controls for card navigating
+	var _stack = [];
 	new ui.lowlevel.label({
 				  x : '40%',
 				  y : '92%',
 				  width : '20%',
 				  height : '7%',
 				  text : info.name
-			      }, null, stack);
+			      }, null, _stack);
 	new ui.lowlevel.button({ 
 				   x : '60%',
-				   y : '92%',
+				   y : '60%',
 				   width : '10%',
 				   height : '7%',
 				   label : 'next',
 				   on_press : function(){
 				       if(cur_card.next != null){
 					   card_obj.hide();
-					   cur_card.next.make_current(null, stack);				
+					   cur_card.next.make_current(null, _stack);
 				       }
 				   }
-			       }, null, stack);
+			       }, null, _stack);
 	new ui.lowlevel.button({ 
 				   x : '30%',
 				   y : '92%',
@@ -67,17 +86,20 @@ module.exports = function(info, dsa, stack){
 				   on_press : function(){
 				       if(cur_card.prev.length){	
 					   card_obj.hide();
-					   cur_card.prev[0].make_current(null, stack);			   
+					   cur_card.prev[0].make_current(null, _stack);			   
 				       }
 				   }
-			       }, null, stack);
+			       }, null, _stack);
+
+	left_up_slide_animate(card.container.container);
     } else {
-	card.prev.push(stack.card);
-	stack.card.card.next = this;
+	left_up_slide_animate(card.container.container);
+	left_up_slide_animate(prev_card.container.container);
+	card.prev.push(prev_card);
+	prev_card.next = this;
     }
+
     stack['card'] = this;
-    
-    card.container = new ui.lowlevel.container(card.geometry, null, stack);
     
     this.alloc_space = function(stack){
 	var card = stack['card'].card;

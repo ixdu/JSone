@@ -11,7 +11,8 @@ function ll_pc_init(){
 //    ui.button = require('./ui/ll/overlay/button.js');
 	entry : require('./ui/ll/native/entry.js'),
 //    ui.panel = require('./ui/ll/overlay/panel.js'),
-	container : require('./ui/ll/overlay/container.js')
+	container : require('./ui/ll/overlay/container.js'),
+	animation : require('./ui/ll/animation.js')
     };
 }
 

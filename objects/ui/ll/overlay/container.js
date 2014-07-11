@@ -106,16 +106,7 @@ module.exports = function(info, dsa, stack){
 	childs : []
     };
 
-    container._main_frame = ui.comp.frame_create(info);
-
-    container._frame1 = ui.comp.frame_create({
-						 x : '0%',
-						 y : '0%',
-						 width : '100%',
-						 height : '100%'
-					     });
-    ui.comp.frame_add(container._main_frame, container._frame1);
-    //	       ui.comp.frame_add(container._parent_frame, container._frame2);
+    container._frame = ui.comp.frame_create(info);
     if(stack['parent'] != undefined){
 	container.parent = stack.parent;
     } else {
@@ -124,34 +115,32 @@ module.exports = function(info, dsa, stack){
 			   };
     }
 	       
-    ui.comp.frame_add(container.parent.frame, container._main_frame);
+    ui.comp.frame_add(container.parent.frame, container._frame);
     
     stack['parent'] = {
-	frame : container._main_frame,
-	geometry : ui.comp.elem_get_geometry(container._main_frame, true)
+	frame : container._frame,
+	geometry : ui.comp.elem_get_geometry(container._frame, true)
     };
     
-    containers[container._main_frame] = container;
+    containers[container._frame] = container;
 
     this.destroy = function(){
-	var container_frame = typeof(id) !== 'undefined' ? id.frame : stack.parent.frame,
-	container = containers[container_frame],
-	adisappear = ui.comp.anim_create([
-					     {
-						 duration : 300,
-						 actions : {
-						     opacity : 100
+	var adisappear = ui.comp.anim_create([
+						 {
+						     duration : 300,
+						     actions : {
+							 opacity : 100
+						     }
 						 }
-					     }
-					 ]),
-	badisappear = ui.comp.anim_bind(container._main_frame, adisappear);
+					     ]),
+	badisappear = ui.comp.anim_bind(container._frame, adisappear);
 	
 	ui.comp.event_register(badisappear, 'animation_stopped');
-	ui.comp.event_register(container._main_frame, 'animation_stopped', 
+	ui.comp.event_register(container._frame, 'animation_stopped', 
 			       function(eventName, eventData){
-				   ui.comp.frame_remove(container._main_frame);
+				   ui.comp.frame_remove(container._frame);
 				   
-				   ui.comp.frame_destroy(container._main_frame);
+				   ui.comp.frame_destroy(container._frame);
 				   //	       for(child_id in container.childs){
 				   //		   dsa.send()
 				   //	       }
