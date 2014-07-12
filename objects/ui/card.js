@@ -9,13 +9,13 @@
 var uuid = require('../../../modules/uuid.js');
 var ui = require('../ui.js');
 
-function left_up_slide_animate(ui_item){
+function slide_animate(ui_item, x, y){
     var anim_slide = new ui.lowlevel.animation([
 						   {
 						       duration : 300,
 						       actions : {
-							   x : -90,
-							   y : -90
+							   x : x,
+							   y : x
 						       }
 						   }
 					       ],
@@ -23,10 +23,67 @@ function left_up_slide_animate(ui_item){
     anim_slide.start();
 }
 
+function nav_bar(card){
+    var _stack = [],
+    cur_card = card,
+    label_def = {
+	x : '40%',
+	y : '92%',
+	width : '20%',
+	height : '7%',
+	text : card.name	
+    },
+    cur_card_name = new ui.lowlevel.label(label_def, null, _stack),
+    next = new ui.lowlevel.button({ 
+				      x : '60%',
+				      y : '92%',
+				      width : '10%',
+				      height : '7%',
+				      label : 'next',
+				      on_press : function(){
+					  if(cur_card.next != undefined){
+					      slide_animate(cur_card.container.container, -80, -90);
+					      slide_animate(cur_card.next.container.container, 80, 90);
+					      cur_card.next = cur_card;
+					      cur_card = cur_card.next;
+					  }
+				      }
+				  }, null, _stack),
+    prev = new ui.lowlevel.button({ 
+				      x : '30%',
+				      y : '92%',
+				      width : '10%',
+				      height : '7%',
+				      label : 'prev',
+				      on_press : function(){
+					  if(cur_card.prev.length){	
+					      slide_animate(cur_card.container.container, -80, -90);
+					      slide_animate(cur_card.prev[0].container.container, 80, 90);
+					      cur_card.prev[0].prev.push(cur_card);
+					      cur_card.next - cur_card.prev.shift();
+					  }
+				      }
+				  }, null, _stack);
+    
+    this.set_current = function(card){
+	cur_card = card;
+	cur_card_name.destroy();
+	label_def.text = card.name;
+	cur_card_name = new ui.lowlevel.label(label_def, null, _stack);
+    };
+
+    this.destroy = function(){
+	cur_card_name.destroy();
+	next.destroy();
+	prev.destroy();
+    };
+};
+
 var root,
     cards = {},
     cur_card,
-    prev_card;
+    prev_card,
+    nav_bar_obj;
 
 module.exports = function(info, dsa, stack){
     prev_card = typeof cur_card != 'undefined' ? cur_card : undefined;
@@ -38,8 +95,8 @@ module.exports = function(info, dsa, stack){
 	geometry : {
 	    x : '100%',
 	    y : '100%',
-	    width : '80%', //нужно менять свой размер в card_alloc_space
-	    height : '80%'
+	    width : '60%', //нужно менять свой размер в card_alloc_space
+	    height : '60%'
 	},
 	cur_offset_x : 0,
 	cur_offset_y : 0,
@@ -56,47 +113,14 @@ module.exports = function(info, dsa, stack){
 
     if(typeof stack['card'] == 'undefined'){
 	//adding controls for card navigating
-	var _stack = [];
-	new ui.lowlevel.label({
-				  x : '40%',
-				  y : '92%',
-				  width : '20%',
-				  height : '7%',
-				  text : info.name
-			      }, null, _stack);
-	new ui.lowlevel.button({ 
-				   x : '60%',
-				   y : '60%',
-				   width : '10%',
-				   height : '7%',
-				   label : 'next',
-				   on_press : function(){
-				       if(cur_card.next != null){
-					   card_obj.hide();
-					   cur_card.next.make_current(null, _stack);
-				       }
-				   }
-			       }, null, _stack);
-	new ui.lowlevel.button({ 
-				   x : '30%',
-				   y : '92%',
-				   width : '10%',
-				   height : '7%',
-				   label : 'prev',
-				   on_press : function(){
-				       if(cur_card.prev.length){	
-					   card_obj.hide();
-					   cur_card.prev[0].make_current(null, _stack);			   
-				       }
-				   }
-			       }, null, _stack);
-
-	left_up_slide_animate(card.container.container);
+	nav_bar_obj = new nav_bar(card);
+	slide_animate(card.container.container, -80, -90);
     } else {
-	left_up_slide_animate(card.container.container);
-	left_up_slide_animate(prev_card.container.container);
+	nav_bar_obj.set_current(card);
+	slide_animate(card.container.container, -80, -90);
+	slide_animate(prev_card.container.container, -80, -90);
 	card.prev.push(prev_card);
-	prev_card.next = this;
+	prev_card.next = this.card;
     }
 
     stack['card'] = this;

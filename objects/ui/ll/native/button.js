@@ -18,11 +18,11 @@ module.exports = function(info, dsa, stack){
     if(info.hasOwnProperty('on_press'))
 	button.on_press = info.on_press;
     
-    button._item = ui.comp.button_create(info); 
+    button._frame = ui.comp.button_create(info); 
     
-    buttons[button._item] = button;
+    buttons[button._frame] = button;
     
-    ui.comp.button_get_control(button._item).on_press(
+    ui.comp.button_get_control(button._frame).on_press(
 	function(){
 	    if(button.hasOwnProperty('on_press')){
 		button.on_press();
@@ -30,7 +30,7 @@ module.exports = function(info, dsa, stack){
 	});
     
     if(stack['parent'] != undefined)
-	ui.comp.frame_add(stack['parent'].frame, button._item);
+	ui.comp.frame_add(stack['parent'].frame, button._frame);
     else {
 	ui.comp.frame_add(0, button._frame);
     }

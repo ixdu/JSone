@@ -7,6 +7,7 @@
  */
 
 var ui, labels = [];
+
 module.exports = function(info, dsa, stack){
 
     ui = require('../../../../parts/ui.js').get();
@@ -59,14 +60,15 @@ module.exports = function(info, dsa, stack){
 
 
     this.destroy = function(){
-	var label = labels[id];
+	var label = this.label;
+	ui.comp.frame_remove(label._frame);
 	ui.comp.frame_remove(label.content);
 	ui.comp.frame_destroy(label._frame);
 	
 	if(label.image == null)
-	    ui.base_items.text_destroy(label.content);
+	    ui.base_items.text.destroy(label.content);
 	else
-	    ui.base_items.image_destroy(label.content);
+	    ui.base_items.image.destroy(label.content);
     };
 
     this.add_to = function(parent){
