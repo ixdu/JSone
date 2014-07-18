@@ -15,8 +15,9 @@ part = require('part.js');
 module.exports = function(info, dsa, stack){
     var new_info = this.part = part(info, null, stack);
     new_info.label = info.label;
-    new_info.on_press = info.on_click;
- 
+    new_info.on_press = function(){
+	info.on_click(dsa, stack);
+    };
     this.part.button = new ui.lowlevel.button(new_info, null, stack);
 
     this.delete = function(){

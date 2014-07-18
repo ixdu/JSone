@@ -152,6 +152,13 @@ module.exports = function(info, dsa, stack){
 	return true;	
     };
 
+    this.make_current = function(stack){
+	stack['parent'] ={
+	    frame : container._frame,
+	    geometry : ui.comp.elem_get_geometry(container._frame, true)
+	};    
+    };
+
     this.add = function(child){
 //	ui.frame_add(this.container)
 //	       childs[id] = type;	

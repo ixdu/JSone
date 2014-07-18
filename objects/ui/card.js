@@ -10,8 +10,7 @@ var uuid = require('../../../modules/uuid.js');
 var ui = require('../ui.js');
 
 function slide_animate(ui_item, x, y){
-    var anim_slide = new ui.lowlevel.animation([
-						   {
+    var anim_slide = new ui.lowlevel.animation([					   {
 						       duration : 300,
 						       actions : {
 							   x : x,
@@ -43,8 +42,7 @@ function nav_bar(card){
 				      on_press : function(){
 					  if(cur_card.next != undefined){
 					      slide_animate(cur_card.container.container, -80, -90);
-					      slide_animate(cur_card.next.container.container, 80, 90);
-					      cur_card.next = cur_card;
+					      slide_animate(cur_card.next.container.container, -80, -90);
 					      cur_card = cur_card.next;
 					  }
 				      }
@@ -57,10 +55,9 @@ function nav_bar(card){
 				      label : 'prev',
 				      on_press : function(){
 					  if(cur_card.prev.length){	
-					      slide_animate(cur_card.container.container, -80, -90);
+					      slide_animate(cur_card.container.container, 80, 90);
 					      slide_animate(cur_card.prev[0].container.container, 80, 90);
-					      cur_card.prev[0].prev.push(cur_card);
-					      cur_card.next - cur_card.prev.shift();
+					      cur_card = cur_card.prev[0];
 					  }
 				      }
 				  }, null, _stack);
@@ -165,10 +162,12 @@ module.exports = function(info, dsa, stack){
 	this.card.container.destroy();
     };    
 
-    this.hide = function(dsa, stack){
+    this.hide = function(stack){
 	
     };
 
-    this.make_current = function(dsa, stack){
+    this.make_current = function(stack){
+	stack['card'] = this;
+	this.card.container.make_current(stack);
     };
 };

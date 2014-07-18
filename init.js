@@ -5,7 +5,8 @@
 
 var seq = exports.seq = require('../modules/sequence.js'),
 sloader = require('service_loader.js'),
-mq  = exports.mq = (require('mq.js')).create();
+mq  = exports.mq = (require('mq.js')).create(),
+uuid = require('../modules/uuid.js');
 
 exports.init = function(urls){
 //    alert(mq.send);
@@ -24,14 +25,29 @@ exports.get = function(service_path){
     //здесь должно быть запоминание сервиса в кеше и возможность запуска удалённых сервисов
     var senv_and_id = sloader.load(service_path, mq, true),
     spec = senv_and_id[0].handlers.introspect(),
-    object = {};
+    object = { local_id : uuid.generate_str()};
+    mq.on_msg(object.local_id, function(msg){
+		  var env = msg.shift(),
+		  name = msg.shift();
+		  if(object.hasOwnProperty(name)){
+		      msg.unshift(env.stack);
+		      msg.unshift(env.next);
+		      object[name].apply(null,msg);
+		      //возможно нужно добавить дальнешую обработку sprout как service_loader dispatch
+		      //или вообще синхронизировать этот код и service_loader dispatch
+		  }
+	      });
     for(key in spec){
 	(function(key){
 	     object[key] = function(){
 		 var _arguments = Array.prototype.slice.call(arguments);
 		 _arguments.unshift(key);
 		 _arguments.unshift(senv_and_id[1]);
-		 return seq.msg.apply(seq, _arguments);
+		 var sprout = seq.msg.apply(seq, _arguments); 
+		 if(object.hasOwnProperty('on_' + key)){
+		     sprout = sprout.sprout(seq.msg(object.local_id, 'on_' + key));
+		 }
+		 return sprout;
 	     };
 	 })(spec[key]);
     }
