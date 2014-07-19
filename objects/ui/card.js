@@ -61,7 +61,10 @@ function nav_bar(card){
 					  }
 				      }
 				  }, null, _stack);
-    
+    this.get_current = function(){
+	return cur_card;	
+    };
+
     this.set_current = function(card){
 	cur_card = card;
 	cur_card_name.destroy();
@@ -78,46 +81,59 @@ function nav_bar(card){
 
 var root,
     cards = {},
-    cur_card,
-    prev_card,
     nav_bar_obj;
 
 module.exports = function(info, dsa, stack){
-    prev_card = typeof cur_card != 'undefined' ? cur_card : undefined;
+    //trying to find card with that name
+    var card;
 
-    var block_size = stack.block_size,
-    id = uuid.generate_str(),
-    card = this.card = cur_card = {
-	name : info.name,
-	geometry : {
-	    x : '100%',
-	    y : '100%',
-	    width : '60%', //нужно менять свой размер в card_alloc_space
-	    height : '60%'
-	},
-	cur_offset_x : 0,
-	cur_offset_y : 0,
-	cur_part_y : 0,
+    for(key in cards){
+	if(cards[key].name == info.name){
+	    card = this.card = cards[key];
+	    this.old = true;
+	    var cur_card = nav_bar_obj.get_current();
+	    nav_bar_obj.set_current(card);
+	    card.prev.push(cur_card);
+	    slide_animate(cur_card.container.container, -80, -90);
+	    slide_animate(card.container.container, -80, -90);
+	    card.prev.next = this.card;
+	}
+    }
 
-	prev : [],
-	next : null
-    },
-    card_obj = this;
-    
-    cards[id] = card;
-    stack.parent = undefined; //too lowlevel
-    card.container = new ui.lowlevel.container(card.geometry, null, stack);
+    //creating new card
+    if(typeof this.card == 'undefined' ){	
+	var block_size = stack.block_size,
+	id = uuid.generate_str();
+	card = cards[id] = this.card  = {
+	    name : info.name,
+	    geometry : {
+		x : '100%',
+		y : '100%',
+		width : '60%', //нужно менять свой размер в card_alloc_space
+		height : '60%'
+	    },
+	    cur_offset_x : 0,
+	    cur_offset_y : 0,
+	    cur_part_y : 0,
 
-    if(typeof stack['card'] == 'undefined'){
-	//adding controls for card navigating
-	nav_bar_obj = new nav_bar(card);
-	slide_animate(card.container.container, -80, -90);
-    } else {
-	nav_bar_obj.set_current(card);
-	slide_animate(card.container.container, -80, -90);
-	slide_animate(prev_card.container.container, -80, -90);
-	card.prev.push(prev_card);
-	prev_card.next = this.card;
+	    prev : [],
+	    next : null
+	};
+
+	stack.parent = undefined; //too lowlevel
+	card.container = new ui.lowlevel.container(card.geometry, null, stack);
+
+	if(typeof stack['card'] == 'undefined'){
+	    //adding controls for card navigating
+	    nav_bar_obj = new nav_bar(card);
+	    slide_animate(card.container.container, -80, -90);
+	} else {
+	    card.prev.push(nav_bar_obj.get_current());
+	    nav_bar_obj.set_current(card);
+	    slide_animate(card.container.container, -80, -90);
+	    slide_animate(card.prev[0].container.container, -80, -90);
+	    card.prev.next = this.card;
+	}	
     }
 
     stack['card'] = this;
