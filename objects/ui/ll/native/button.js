@@ -22,7 +22,8 @@ module.exports = function(info, dsa, stack){
     
     buttons[button._frame] = button;
     
-    ui.comp.button_get_control(button._frame).on_press(
+    button.control = ui.comp.button_get_control(button._frame);
+    button.control.on_press(
 	function(){
 	    if(button.hasOwnProperty('on_press')){
 		button.on_press();
@@ -34,6 +35,8 @@ module.exports = function(info, dsa, stack){
     else {
 	ui.comp.frame_add(0, button._frame);
     }
+
+    this.set_label = button.control.set_label;
 
     this.destroy = function(){
 	//	       comp.frame_remove(parent, button._item);

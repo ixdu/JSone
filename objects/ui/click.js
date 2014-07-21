@@ -20,6 +20,8 @@ module.exports = function(info, dsa, stack){
     };
     this.part.button = new ui.lowlevel.button(new_info, null, stack);
 
+    this.set_label = this.part.button.set_label;
+
     this.delete = function(){
 	
     };

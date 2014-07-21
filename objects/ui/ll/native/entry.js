@@ -11,7 +11,6 @@ entries = [];
 
 module.exports = function(info, dsa, stack){
     var entry = this.entry = {
-	text : ''  
     };
     
     if(info.hasOwnProperty('on_text_change'))
@@ -35,6 +34,8 @@ module.exports = function(info, dsa, stack){
     (entry.control = ui.comp.entry_get_control(entry._entry)).on_text_change(function(text){
 							       entry.on_text_change(text);
 							   });
+    if(info.hasOwnProperty('text'))
+	entry.control.set_value(info.text);
     
     entries[entry._frame] = entry;
     

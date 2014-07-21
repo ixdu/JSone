@@ -23,7 +23,8 @@ function slide_animate(ui_item, x, y){
 }
 
 function nav_bar(card){
-    var _stack = [],
+    var nb = this,
+    _stack = [],
     cur_card = card,
     label_def = {
 	x : '40%',
@@ -44,6 +45,7 @@ function nav_bar(card){
 					      slide_animate(cur_card.container.container, -80, -90);
 					      slide_animate(cur_card.next.container.container, -80, -90);
 					      cur_card = cur_card.next;
+					      nb.set_current(cur_card);
 					  }
 				      }
 				  }, null, _stack),
@@ -58,6 +60,7 @@ function nav_bar(card){
 					      slide_animate(cur_card.container.container, 80, 90);
 					      slide_animate(cur_card.prev[0].container.container, 80, 90);
 					      cur_card = cur_card.prev[0];
+					      nb.set_current(cur_card);
 					  }
 				      }
 				  }, null, _stack);
@@ -105,6 +108,7 @@ module.exports = function(info, dsa, stack){
 	var block_size = stack.block_size,
 	id = uuid.generate_str();
 	card = cards[id] = this.card  = {
+	    id : id,
 	    name : info.name,
 	    geometry : {
 		x : '100%',
@@ -174,8 +178,13 @@ module.exports = function(info, dsa, stack){
     this.destroy = function(){
 //	if(stack.card == this)
 //	    stack.card = undefined; //need replace with prev card
-
-	this.card.container.destroy();
+	with(this){
+	    delete cards[card.id];
+	    card.container.destroy();
+	    card.prev[0].next = null;
+	    nav_bar_obj.set_current(card.prev[0]);
+	    slide_animate(card.prev[0].container.container, 80, 90);
+	}
     };    
 
     this.hide = function(stack){

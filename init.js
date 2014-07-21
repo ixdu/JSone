@@ -6,7 +6,9 @@
 var seq = exports.seq = require('../modules/sequence.js'),
 sloader = require('service_loader.js'),
 mq  = exports.mq = (require('mq.js')).create(),
-uuid = require('../modules/uuid.js');
+uuid = require('../modules/uuid.js'),
+
+cache = []; //cache of loaded services
 
 exports.init = function(urls){
 //    alert(mq.send);
@@ -22,9 +24,15 @@ exports.init = function(urls){
 };
 
 exports.get = function(service_path){
-    //здесь должно быть запоминание сервиса в кеше и возможность запуска удалённых сервисов
-    var senv_and_id = sloader.load(service_path, mq, true),
-    spec = senv_and_id[0].handlers.introspect(),
+    //saving service self in a ccache, but wrapper is created each time
+    //здесь нужно предусмотреть возможность запуска удалённых сервисов
+    var senv_and_id;
+    if(typeof cache[service_path] != 'undefined')
+	senv_and_id = cache[service_path];
+    else
+	senv_and_id = cache[service_path] = sloader.load(service_path, mq, true);
+
+    var spec = senv_and_id[0].handlers.introspect(),
     object = { local_id : uuid.generate_str()};
     mq.on_msg(object.local_id, function(msg){
 		  var env = msg.shift(),
