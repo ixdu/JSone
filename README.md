@@ -1,1 +1,6 @@
-The message queue system, built on the top of capsule abstraction. This is important basic component, which was used by the dsa for services' communication. MQ is agnostic to type of the underlayer transport.
+The framework for developing distrubuted applications in javascript which can be executed in browser, nodejs, gjs and any other platforms supported by capsule.
+Consist from:
++ mq - message queue
++ dsa - distribute service arhitecture, libs for writing services or components
++ ui - services for creating ui with crossplatform way
++ storage - services for creating distributed storage
