@@ -11,7 +11,7 @@ exports.get = function(){
     if(ui != null)
 	return ui;
 
-    var _comp = require('../../modules/ui/Compositer.js').create();
+    var _comp = new (require('../../modules/ui/Compositer.js')).Compositer();
     return ui = {
 	comp : _comp,
 	base_items : require('../../modules/ui/base_items.js').create(_comp)	

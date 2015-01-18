@@ -39,8 +39,8 @@ module.exports = function(info, dsa, stack){
     this.set_label = button.control.set_label;
 
     this.destroy = function(){
-	//	       comp.frame_remove(parent, button._item);
-	ui.comp.button_destroy(id);
+	ui.comp.frame_remove(button._frame);
+	ui.comp.button_destroy(button._frame);
     };
 
     this.add_to = function(parent){

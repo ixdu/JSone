@@ -22,7 +22,7 @@ module.exports = function(info, dsa, stack){
 
     this.set_label = this.part.button.set_label;
 
-    this.delete = function(){
-	
+    this.destroy = function(){
+	this.part.button.destroy();
     };
 };

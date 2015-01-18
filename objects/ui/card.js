@@ -28,17 +28,18 @@ function nav_bar(card){
     cur_card = card,
     label_def = {
 	x : '40%',
-	y : '92%',
+	y : '2%',
 	width : '20%',
-	height : '7%',
+	height : '16%',
 	text : card.name	
     },
     cur_card_name = new ui.lowlevel.label(label_def, null, _stack),
+    block_size = ui.block_size,
     next = new ui.lowlevel.button({ 
-				      x : '60%',
-				      y : '92%',
+				      x : '13%',
+				      y : '2%',
 				      width : '10%',
-				      height : '7%',
+				      height : '16%',
 				      label : 'next',
 				      on_press : function(){
 					  if(cur_card.next != undefined){
@@ -50,10 +51,10 @@ function nav_bar(card){
 				      }
 				  }, null, _stack),
     prev = new ui.lowlevel.button({ 
-				      x : '30%',
-				      y : '92%',
+				      x : '2%',
+				      y : '2%',
 				      width : '10%',
-				      height : '7%',
+				      height : '16%',
 				      label : 'prev',
 				      on_press : function(){
 					  if(cur_card.prev.length){	
@@ -182,8 +183,10 @@ module.exports = function(info, dsa, stack){
 	    delete cards[card.id];
 	    card.container.destroy();
 	    card.prev[0].next = null;
-	    nav_bar_obj.set_current(card.prev[0]);
-	    slide_animate(card.prev[0].container.container, 80, 90);
+	    if(nav_bar_obj.get_current() == card){
+		nav_bar_obj.set_current(card.prev[0]);
+		slide_animate(card.prev[0].container.container, 80, 90);		
+	    }
 	}
     };    
 

@@ -40,3 +40,37 @@
  *   Способен сохранять своё состояние, мигрировать и восстанавливать.
  */
 
+var linker = 'caravan/init.js';
+var dsa;
+
+var local_services = {};
+
+exports.init = function(_dsa){
+   dsa = dsa;
+};
+
+exports.service['state'] = {
+    start : function(sprout, stack, image){
+	//loading lists if there is no presaved image(cold application start)
+	if(typeof image == 'undefined'){
+	    local_services.lists = linker.get('./lists');
+	    (local_services.lists.get_insterface('state')).start();	    
+	} else {
+	//loading services with presaved images
+	    for(key in image.services){
+		local_services[key] = linker.get('./' + key);
+		(local_services[key].get_interface('state')).start(image.services[key]);
+	    }	    
+	}
+    },
+    stop : function(){
+	for(key in local_services){
+	    (local_services[key].get_interface('state')).stop();
+	}
+    },
+    save : function(sprout, stack, image){
+	for(key in local_services){
+	    (local_services[key].get_interface('state')).save(image);
+	}
+    }
+};
