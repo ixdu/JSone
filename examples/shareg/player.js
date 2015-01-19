@@ -1,23 +1,43 @@
-var trecord = require('types/record'); 
+var trecord = require('types/record'),
+    tllplayer = require('parts/player'),
+    ui = require('parts/ui');
 
 var player;
 
 function tplayer(state){
-    var pcontrol;
+    var llplayer = new tllplayer({ type : 'any', 
+				   parent_surface : ui.root, 
+				   geometry : {
+				       x : '0%',
+				       y : '0%',
+				       width : '50%',
+				       height : '50%'
+				   }
+				 }
+				 );
+    //create with image
+    if(typeof state != 'undefined'){
+	llplayer.load(state.loaded_object);
+	llplayer.set_state(state.state);
+	llplayer.set_position(state.position);
+	llplayer.set_volume(state.volume);
+    }
+
     this.get_state = function(){
 	return {
-	    loaded_object : pcontrol.get_loaded_object(),
-	    state : pcontrol.get_state(),
-	    position : pcontrol.get_position(),
-	    volume : pcontrol.get_volume()	    
+	    loaded_object : llplayer.get_loaded_object(),
+	    state : llplayer.get_state(),
+	    position : llplayer.get_position(),
+	    volume : llplayer.get_volume()	    
 	};
     };
 
     this.destroy = function(){
+	llplayer.destroy();
     };
 };
 
-exports.serivce['media_player'] = {
+exports.service['media_player'] = {
     //загрузить объект из источника
     load : function(source, id){
 	
@@ -36,11 +56,7 @@ exports.serivce['media_player'] = {
 
 exports.service['state'] = {
     start : function(sprout, stack, image){
-	if(typeof image == 'undefined'){
-	    player = new tplayer();
-	} else {
 	    player = new tplayer(image);
-	}
     },
     stop : function(){
 	player.destroy();
