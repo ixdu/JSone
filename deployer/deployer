@@ -1,0 +1,15 @@
+#!/usr/bin/bash
+
+cp ./configs/01core.json ../$4/01core.json
+cp ./configs/02ui.json ../$4/02ui.json
+cd ..
+ln -s ../caravan ../capsule/caravan
+
+cd ../capsule/platforms/$1/deployer
+./deployer $2 $3 caravan/$4 
+
+cd ../../../
+rm caravan
+cd ../caravan/deployer
+rm ../$4/01core.json
+rm ../$4/02ui.json

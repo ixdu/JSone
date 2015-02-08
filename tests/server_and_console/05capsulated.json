@@ -1,0 +1,8 @@
+{
+    "type" : "module",
+
+    "preload" : true,
+    "inline" : true,
+
+    "capsulated" : "caravan/tests/server_and_console/capsulated.js"
+}
