@@ -3,23 +3,17 @@
  *  
  */
 
-var seq = exports.seq = require('../modules/sequence.js'),
-sloader = require('service_loader.js'),
-mq  = exports.mq = (require('mq.js')).create(),
-uuid = require('../modules/uuid.js'),
+var seq = exports.seq = require('../modules/sequence'),
+sloader = require('./service_loader'),
+mq  = exports.mq = (require('./mq')).create(),
+uuid = require('../modules/uuid'),
 
 cache = []; //cache of loaded services
 
 exports.init = function(urls){
-//    alert(mq.send);
     mq.activate({"transport" : "direct", "url": "blahe" },
 		{"transport" : "direct", "url": "blahc" }
 	       );
-//    mqnode2.activate({"transport" : "direct", "url": "blaha" },
-//		     {"transport" : "direct", "url": "blahh" }
-//		    );
-//    mqnode1.node_add({"transport" : "direct", "url": "blahh" });
-//    mqnode2.node_add({"transport" : "direct", "url": "blahc" });
     seq.mq_send = mq.send;
 };
 

@@ -1,8 +1,8 @@
 exports.main = function(env){
-    alert('uhh');
-//    var dsa = require('dsa/init.js');
-//  dsa.init();
-    
+    var caravan = require('caravan/init');
+    caravan.init();
+    var main = caravan.get('shareg/main');    
+    main.state_start().run();    
 //    var frontend = dsa.get('sphere/frontend'),
 //    backend = dsa.get('sphere/backend');
     

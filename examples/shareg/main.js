@@ -23,7 +23,7 @@
  * других приложений подобно тому, как capsule/examples/player стал донором плеера для этого приложения.
  * Вот эти части:
  * + player 
- *   способен воспроизводить аудио и видео, с основном построен на capsule/examples/player. Может сохранять
+ *   способен воспроизводить аудио и видео, в основном построен на capsule/examples/player. Может сохранять
  *   своё состояние, мигрировать и восстанавливать. В качестве источников воспроизведение использует любой
  *   сервис, который реализует media_source интерфейс. Также реализует интерфейс player, чтобы им могли
  *   управлять другие сервисы. 
@@ -40,28 +40,36 @@
  *   Способен сохранять своё состояние, мигрировать и восстанавливать.
  */
 
-var linker = 'caravan/init.js';
-var dsa;
+var linker = require('caravan/init'),
+cn,
+local_services = {};
 
-var local_services = {};
-
-exports.init = function(_dsa){
-   dsa = dsa;
+exports.init = function(_caravan){
+    cn = _caravan;
+    
+    cn.on('state_start', function(sprout, stack, image){
+	      require('caravan/parts/ui');
+	      //loading lists if there is no presaved image(cold application start)
+	      if(typeof image == 'undefined'){
+		  local_services.lists = linker.get('shareg/lists');
+		  local_services.lists.state_start(image).run();
+	      } else {
+		  //loading services with presaved images
+		  for(key in image.services){
+		      local_services[key] = linker.get('./' + key);
+		      (local_services[key].get_interface('state')).start(image.services[key]);
+		  }	    
+	      }
+	  });
+    cn.on('state_stop', function(sprout, stack){
+	  });
+    cn.on('state_save', function(sprout, stack, image){
+	  });
 };
 
-exports.service['state'] = {
+exports.interfaces = [];
+exports.interfaces['state'] = {
     start : function(sprout, stack, image){
-	//loading lists if there is no presaved image(cold application start)
-	if(typeof image == 'undefined'){
-	    local_services.lists = linker.get('./lists');
-	    (local_services.lists.get_insterface('state')).start();	    
-	} else {
-	//loading services with presaved images
-	    for(key in image.services){
-		local_services[key] = linker.get('./' + key);
-		(local_services[key].get_interface('state')).start(image.services[key]);
-	    }	    
-	}
     },
     stop : function(){
 	for(key in local_services){

@@ -4,5 +4,19 @@
     "preload" : true,
     "inline" : true,
 
+    "shareg" : {
+	"preload" : false,
+    
+	"images" : {
+	    "type" : "image",
+	    
+	    "red" : "caravan/examples/shareg/images/red.png",
+	    "blue" : "caravan/examples/shareg/images/blue.png"
+	},
+	
+	"main" : "caravan/examples/shareg/main.js",
+        "lists" : "caravan/examples/shareg/lists.js",
+	"player" : "caravan/examples/shareg/player.js"	
+    },
     "capsulated" : "caravan/examples/shareg/capsulated.js"
 }

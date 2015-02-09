@@ -11,11 +11,8 @@ exports.get = function(){
     if(ui != null)
 	return ui;
 
-    var _comp = new (require('../../modules/ui/Compositer.js')).Compositer();
+    var _comp = new (require('modules/ui/Compositer')).Compositer();
     return ui = {
-	comp : _comp,
-	base_items : require('../../modules/ui/base_items.js').create(_comp)	
+	comp : _comp
     };
 };
-
-//    var ncontrols = env.dsa.parts.ui.native_controls.create(comp, sequence);

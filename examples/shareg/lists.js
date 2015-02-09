@@ -1,6 +1,6 @@
 var trecord = require('types/record'),
-    ui = require('parts/ui'),
-    tconstructor = require('types/constructor');
+    ui = require('caravan/parts/ui');
+//    tconstructor = require('types/constructor');
 
 function list_item(){
 //реализация оболочки для capsule types, чтобы визуально их представлять, каждый и совершать визуальные
@@ -12,7 +12,7 @@ function list_item_check(){
  
 }
 
-function tlists(state){
+function tlists(image){
     var lists, current;
     if(typeof state == 'undefined'){
 	current = {};
@@ -39,7 +39,7 @@ function tlists(state){
 	for(item in current){
 	    if(!lists_item_check(current[item]))
 		continue;
-	    current._card.add(new list_item(new tconstructor(current[item])));
+//	    current._card.add(new list_item(new tconstructor(current[item])));
 	}
     }
     ui.root.add(current._card);	
@@ -61,6 +61,57 @@ function tlists(state){
 
 var lists;
 
+exports.init = function(_cn){
+    _cn.on('state_start', function(sprout, stack, image){
+	       var ui = (require('caravan/parts/ui')).get(),
+	       comp = ui.comp;
+	       var red = comp.image_create({
+				     x : '%10',
+				     y : '%10',
+				     width : '%30',
+				     height : '%20',
+				     source : require('shareg/images/red')
+				 }),
+	       blue = comp.image_create({
+				     x : '%40',
+				     y : '%30',
+				     width : '%30',
+				     height : '%20',
+				     source : require('shareg/images/blue')
+				 });
+	       comp.frame_add(0, red);
+	       comp.frame_add(0, blue);
+	       var anim = comp.anim_create([
+					       {
+						   duration : 3000,
+						   actions : {
+						       x : 20,
+						       y : 20,
+//						       width : -10,
+//						       height : 30
+						   }
+					       },
+					       {
+						   duration : 3000,
+						   actions : {
+						       x : -20,
+						       y : -20,
+//						       width : 10,
+//						       height : -30
+						   }						  
+					       }
+					   ]);
+	       comp.anim_start(comp.anim_bind(red, anim));
+	       comp.anim_start(comp.anim_bind(blue, anim));
+//	      lists = new tlists(image);
+	  });
+    _cn.on('state_stop', function(sprout, stack){
+	  });
+    _cn.on('state_save', function(sprout, stack, image){
+	  });  
+};
+
+/*
 exports.serivce['media_source'] = {
     //возвращает media объект одного из поддерживаемых capsule типов
     get_media : function(id){
@@ -88,3 +139,4 @@ exports.service['state'] = {
 	image.services['lists'] = pimage;
     }
 };
+*/
