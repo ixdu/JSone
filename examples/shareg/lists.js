@@ -61,48 +61,109 @@ function tlists(image){
 
 var lists;
 
+var comp;
+
+function ue(element_name){
+    var args = Array.prototype.slice.call(arguments),
+    element;
+    args.shift();
+    //отделяем элементы компосайтера старого типа(только id) от новых(объекты)
+    if(/^frame$|^image$|^text$|^button$|^entry$/.exec(element_name)){
+	element = {};
+	element.id = comp[element_name + '_create'].apply(comp, args);
+	element.destroy = function(){
+	    comp[element_name + '_destroy'].apply(comp, this.id);
+	};
+    } else {
+	element = comp[element_name + '_create'].apply(comp, args);
+    }
+
+    //тут должен быть код управления геометрией на основе размеров или миллиметров и любой другой код, 
+    //уместный для элементов каравана
+    return element;
+}
+
+var rorb = 1;
+function tlelement(){
+    var element;
+    if(rorb == 1){
+	rorb = 0;
+	element = ue('image', {
+			 x : '0%',
+			 y : '0%',
+			 width : '50%',
+			 height : '100%',
+			 source : require('shareg/images/red')
+		     });
+    }else{
+	rorb = 1;
+	element = ue('image', {
+			 x : '50%',
+			 y : '0%',
+			 width : '50%',
+			 height : '100%',
+			 source : require('shareg/images/blue')
+		     });
+    }
+    return element;
+};
+
+function tlist(info){
+    var elements = [],
+    element,
+    counter = 0;
+    element = ue('frame', info);
+
+    element.insert = function(position, element){
+	elements[position] = element;
+	element.container = comp.frame_create({
+						  x : '0%',
+						  y : (counter++ * 10) + '%',
+						  width : '100%',
+						  height : '10%'
+					      });
+	comp.frame_add(element.container, element.id);
+	comp.frame_add(this.id, element.container);
+    };
+    element.remove = function(position){
+    };
+
+    return element;
+};
+
 exports.init = function(_cn){
     _cn.on('state_start', function(sprout, stack, image){
-	       var ui = (require('caravan/parts/ui')).get(),
+	       var ui = (require('caravan/parts/ui')).get();
 	       comp = ui.comp;
-	       var red = comp.image_create({
-				     x : '%10',
-				     y : '%10',
-				     width : '%30',
-				     height : '%20',
-				     source : require('shareg/images/red')
-				 }),
-	       blue = comp.image_create({
-				     x : '%40',
-				     y : '%30',
-				     width : '%30',
-				     height : '%20',
-				     source : require('shareg/images/blue')
-				 });
-	       comp.frame_add(0, red);
-	       comp.frame_add(0, blue);
-	       var anim = comp.anim_create([
-					       {
-						   duration : 3000,
-						   actions : {
-						       x : 20,
-						       y : 20,
-//						       width : -10,
-//						       height : 30
-						   }
-					       },
-					       {
-						   duration : 3000,
-						   actions : {
-						       x : -20,
-						       y : -20,
-//						       width : 10,
-//						       height : -30
-						   }						  
-					       }
-					   ]);
-	       comp.anim_start(comp.anim_bind(red, anim));
-	       comp.anim_start(comp.anim_bind(blue, anim));
+
+	       var list = tlist({
+				    x : '10%',
+				    y : '10%',
+				    width : '40%',
+				    height : '80%'		      
+				});
+	       list.insert(1, tlelement());
+	       list.insert(2, tlelement());
+	       list.insert(3, tlelement());
+	       list.insert(4, tlelement());
+	       list.insert(5, tlelement());
+	       list.insert(6, tlelement());
+	       comp.frame_add(0, list.id);
+
+	       var list1 = tlist({
+				    x : '51%',
+				    y : '20%',
+				    width : '40%',
+				    height : '80%'		      
+				});
+	       list1.insert(1, tlelement());
+	       list1.insert(2, tlelement());
+	       list1.insert(3, tlelement());
+	       list1.insert(4, tlelement());
+	       list1.insert(5, tlelement());
+	       list1.insert(6, tlelement());
+	       comp.frame_add(0, list1.id);
+
 //	      lists = new tlists(image);
 	  });
     _cn.on('state_stop', function(sprout, stack){
