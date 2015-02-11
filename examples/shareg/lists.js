@@ -72,7 +72,7 @@ function ue(element_name){
 	element = {};
 	element.id = comp[element_name + '_create'].apply(comp, args);
 	element.destroy = function(){
-	    comp[element_name + '_destroy'].apply(comp, this.id);
+	    comp[element_name + '_destroy'].call(comp, this.id);
 	};
     } else {
 	element = comp[element_name + '_create'].apply(comp, args);
@@ -84,18 +84,53 @@ function ue(element_name){
 }
 
 function modal(form_info){
-    var list = tlist({ 
-			 x : '20%',
-			 y : '20%',
-			 width : '60%',
-			 height : '60%'
-		     });
-    for(ind in arguments){
-	list.insert(ind);
-    }
+    //тут ещё должна быть работа по скрытию перекрываемого содержимового и прочее
+    var modal_f = ue('frame', {
+			 x : '30%',
+			 y : '30%',
+			 width : '40%',
+			 height : '40%'
+		     }),
+    content_f = ue('frame', {
+		       x : '2%',
+		       y : '2%',
+		       width : '96%',
+		       height : '96%'
+		   }),
+    bg_i = ue('image', {
+		  x : '0%',
+		  y : '0%',
+		  width : '100%',
+		  height : '100%',
+		  source : require('shareg/images/brown_rect')
+	      }),
+    grey_i = ue('image', {
+		    x : '0%',
+		    y : '0%',
+		    width : '100%',
+		    height : '100%',
+		    opacity : '5%',
+		    source : require('shareg/images/grey')
+		});
+    
+    comp.frame_add(0, grey_i.id);
+    comp.frame_add(0, modal_f.id);
+    comp.frame_add(modal_f.id, bg_i.id);
+    comp.frame_add(modal_f.id, content_f.id);
 
-    list.insert(arguments.length, telement('button', {
-					   }))
+    modal_f.content = content_f;
+    modal_f.destroy = function(){
+	comp.frame_remove(grey_i.id);
+	grey_i.destroy();
+	comp.frame_remove(bg_i.id);
+	bg_i.destroy();
+	comp.frame_remove(content_f.id);
+	content_f.destroy();
+	comp.frame_remove(this.id);
+	comp.frame_destroy(this.id);
+    };
+
+    return modal_f;
 }
 
 var rorb = 0;
@@ -121,10 +156,35 @@ function tlelement(){
 		     });
     }
     comp.event_register(element.id, 'pointer_up', function(){
-			    modal({
-				      ok : 'удалить'
-			    });
-//			    element.container.obj.remove_by_obj(element);
+			    var _modal = modal(),
+			    delete_b = ue('button', {
+					      x : '0%',
+					      y : '0%',
+					      width : '100%',
+					      height : '30%',
+					      label : 'удалить',
+					      on_press : function(){
+						  element.container.obj.remove_by_obj(element);
+						  _modal.destroy();
+						  delete_b.destroy();
+						  change_b.destroy();
+					      }
+					}),			    
+			    change_b = ue('button', {
+					      x : '0%',
+					      y : '30%',
+					      width : '100%',
+					      height : '30%',
+					      label : 'изменить',
+					      on_press : function(){
+						  _modal.destroy();
+						  delete_b.destroy();
+						  change_b.destroy();
+					      }
+					});
+
+			    comp.frame_add(_modal.content.id, delete_b.id);
+			    comp.frame_add(_modal.content.id, change_b.id);
 			});
 
     return element;
@@ -164,7 +224,7 @@ function tlist(info){
     
     element = ue('frame', info);
 
-    element.insert = function(position, element){
+    element.insert = function(position, _element){
 	if(position >= elements.length+1)
 	    return null;
 	if(geometry.height + 10 > 100)
@@ -173,7 +233,7 @@ function tlist(info){
 	    geometry.height += 10;
 
 	var container = {
-	    element : element,
+	    element : _element,
 	    geometry : {
 		x : 0,
 		y : (position * 10),
@@ -189,16 +249,17 @@ function tlist(info){
 	    slide_elements(position, { y : container.geometry.height});	    
 	    elements.splice(position, 0, container);
 	}
-	element.container = {
+	_element.container = {
 	    frame : comp.frame_create({
 					  x : container.geometry.x + '%',
 					  y :  container.geometry.y + '%',
 					  width : container.geometry.width + '%',
 					  height : container.geometry.height + '%'
-				      })
+				      }),
+	    obj : element
 	};
-	comp.frame_add(element.container.frame, element.id);
-	comp.frame_add(this.id, element.container.frame);
+	comp.frame_add(_element.container.frame, _element.id);
+	comp.frame_add(this.id, _element.container.frame);
 
 	return container;
     };
@@ -214,7 +275,7 @@ function tlist(info){
 	elements.splice(position, 1);
 	comp.frame_remove(element.id);
 	comp.frame_remove(element.container.frame);
-	comp.frame_remove(this.id);
+	comp.frame_remove(element.id);
 	comp.frame_destroy(element.container.frame);
 	element.container = undefined;
 
@@ -226,8 +287,9 @@ function tlist(info){
 
     element.remove_by_obj = function(element){
 	for(ind in elements){
-//	    if(elements[ind].element == element)
-//		this.remove(ind);
+	    if(elements[ind].element == element){
+		this.remove(ind);
+	    }
 	}
     };
 
@@ -244,10 +306,10 @@ exports.init = function(_cn){
 	       comp = ui.comp;
 
 	       var list = tlist({
-				    x : '10%',
-				    y : '10%',
+				    x : '30%',
+				    y : '20%',
 				    width : '40%',
-				    height : '80%'		      
+				    height : '70%'		      
 				});
 
 	       list.insert(0, tlelement());
@@ -269,7 +331,7 @@ exports.init = function(_cn){
 					   height : '100%',
 					   label : 'добавить',
 					   on_press : function(){
-					       list.insert(1, tlelement());
+					       list.insert(0, tlelement());
 					   }
 				       }));
 	       list.insert(3, telement('button', {
