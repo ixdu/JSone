@@ -83,7 +83,22 @@ function ue(element_name){
     return element;
 }
 
-var rorb = 1;
+function modal(form_info){
+    var list = tlist({ 
+			 x : '20%',
+			 y : '20%',
+			 width : '60%',
+			 height : '60%'
+		     });
+    for(ind in arguments){
+	list.insert(ind);
+    }
+
+    list.insert(arguments.length, telement('button', {
+					   }))
+}
+
+var rorb = 0;
 function tlelement(){
     var element;
     if(rorb == 1){
@@ -105,27 +120,119 @@ function tlelement(){
 			 source : require('shareg/images/blue')
 		     });
     }
+    comp.event_register(element.id, 'pointer_up', function(){
+			    modal({
+				      ok : 'удалить'
+			    });
+//			    element.container.obj.remove_by_obj(element);
+			});
+
     return element;
 };
+
+function telement(name, info){
+    var element;
+
+    element = ue(name, info);
+
+    return element;
+}
 
 function tlist(info){
     var elements = [],
     element,
-    counter = 0;
+    geometry = {
+	height : 0	
+    };
+    function slide_elements(what_position, actions){
+	var slide_a = comp.anim_create([{
+					    duration : 300,
+					    actions : actions
+					}
+				       ]),
+	slide_elems_c = what_position, banim;
+	while(slide_elems_c != elements.length){
+	    banim = comp.anim_bind(elements[slide_elems_c].element.container.frame, slide_a);
+	    comp.anim_start(banim);
+	    comp.event_register(banim, 'animation_stopped', function(){
+				    comp.anim_unbind(banim);
+				    comp.anim_destroy(slide_a);
+				});
+	    slide_elems_c++;
+	}		
+    }
+    
     element = ue('frame', info);
 
     element.insert = function(position, element){
-	elements[position] = element;
-	element.container = comp.frame_create({
-						  x : '0%',
-						  y : (counter++ * 10) + '%',
-						  width : '100%',
-						  height : '10%'
-					      });
-	comp.frame_add(element.container, element.id);
-	comp.frame_add(this.id, element.container);
+	if(position >= elements.length+1)
+	    return null;
+	if(geometry.height + 10 > 100)
+	    return null;
+	else
+	    geometry.height += 10;
+
+	var container = {
+	    element : element,
+	    geometry : {
+		x : 0,
+		y : (position * 10),
+		width : 100,
+		height : 10
+	    }
+	};
+
+	if(elements[position] == undefined)
+	    elements[position] = container;	    
+	else{
+	    //slide follow elements down to one
+	    slide_elements(position, { y : container.geometry.height});	    
+	    elements.splice(position, 0, container);
+	}
+	element.container = {
+	    frame : comp.frame_create({
+					  x : container.geometry.x + '%',
+					  y :  container.geometry.y + '%',
+					  width : container.geometry.width + '%',
+					  height : container.geometry.height + '%'
+				      })
+	};
+	comp.frame_add(element.container.frame, element.id);
+	comp.frame_add(this.id, element.container.frame);
+
+	return container;
     };
+
     element.remove = function(position){
+	if(position >= elements.length)
+	    return null; 
+	
+	var container = elements[position],
+	element = container.element;
+
+	geometry.height -= 10;
+	elements.splice(position, 1);
+	comp.frame_remove(element.id);
+	comp.frame_remove(element.container.frame);
+	comp.frame_remove(this.id);
+	comp.frame_destroy(element.container.frame);
+	element.container = undefined;
+
+	//slide follow elements up to one
+	slide_elements(position, { y : -container.geometry.height});
+	
+	return container.element;
+    };
+
+    element.remove_by_obj = function(element){
+	for(ind in elements){
+//	    if(elements[ind].element == element)
+//		this.remove(ind);
+	}
+    };
+
+    element.destroy = function(){
+	
     };
 
     return element;
@@ -142,32 +249,41 @@ exports.init = function(_cn){
 				    width : '40%',
 				    height : '80%'		      
 				});
+
+	       list.insert(0, tlelement());
 	       list.insert(1, tlelement());
 	       list.insert(2, tlelement());
+	       list.remove(2);
+	       list.insert(2, tlelement());
 	       list.insert(3, tlelement());
-	       list.insert(4, tlelement());
-	       list.insert(5, tlelement());
-	       list.insert(6, tlelement());
+	       list.remove(3);
+	       list.remove(2);
+//	       list.remove(3);
+
 	       comp.frame_add(0, list.id);
 
-	       var list1 = tlist({
-				    x : '51%',
-				    y : '20%',
-				    width : '40%',
-				    height : '80%'		      
-				});
-	       list1.insert(1, tlelement());
-	       list1.insert(2, tlelement());
-	       list1.insert(3, tlelement());
-	       list1.insert(4, tlelement());
-	       list1.insert(5, tlelement());
-	       list1.insert(6, tlelement());
-	       comp.frame_add(0, list1.id);
-
-//	      lists = new tlists(image);
+	       list.insert(2, telement('button', {
+					   x : '0%',
+					   y : '0%',
+					   width : '100%',
+					   height : '100%',
+					   label : 'добавить',
+					   on_press : function(){
+					       list.insert(1, tlelement());
+					   }
+				       }));
+	       list.insert(3, telement('button', {
+					   x : '0%',
+					   y : '0%',
+					   width : '100%',
+					   height : '100%',
+					   label : 'выгрузить'					   
+				       }));
 	  });
+
     _cn.on('state_stop', function(sprout, stack){
 	  });
+
     _cn.on('state_save', function(sprout, stack, image){
 	  });  
 };
@@ -186,13 +302,6 @@ exports.serivce['media_source'] = {
     }
 };
 
-exports.service['state'] = {
-    start : function(sprout, stack, image){
-	lists = new tlists(state);
-    },
-    stop : function(){
-	lists.destroy();
-    },
     save : function(sprout, stack, image){
 	var pimage = new trecord();
 	pimage.data = lists.get_state();
