@@ -63,6 +63,70 @@ var lists;
 
 var comp;
 
+function celement_proto(){
+    this.on = function(event, callback){
+	if(callback === 'undefined')
+	    comp.event_unregister(this.id, event);
+	else
+	    comp.event_register(this.id, event, callback);
+    };
+}
+
+function cframe(info){
+    var children = [];
+
+    this.id = info == undefined? 0 : comp.frame_create(info);
+    this.add = function(child){
+	child.parent = this;
+	children.push(child);
+	comp.frame_add(this.id, child.id);	
+    };
+    this.destroy = function(){
+	for(child in children){
+	    comp.frame_remove(children[child].id);
+	    children[child].destroy();
+	}
+	children = undefined;
+	if(this.parent != undefined)
+	    comp.frame_remove(this.id);
+	comp.frame_destroy(this.id);
+    };
+}
+
+cframe.prototype = new celement_proto();
+
+var root_f = new cframe(undefined);
+
+function cimage(info){
+    this.id = comp.image_create(info);
+    this.destroy = function(){
+	comp.image_destroy(this.id);
+    };    
+}
+
+function ctext(info){
+    this.id = comp.text_create(info);
+    this.destroy = function(){
+	comp.text_destroy(this.id);
+    };    
+}
+
+function cbutton(info){
+    this.id = comp.button_create(info);
+    this.destroy = function(){
+	comp.button_destroy(this.id);
+    };    
+}
+
+function centry(info){
+    this.id = comp.entry_create(info);
+    this.control = comp.entry_get_control(this.id);
+    this.destroy = function(){
+	comp.entry_destroy(this.id);
+    };    
+}
+
+
 function ue(element_name){
     var args = Array.prototype.slice.call(arguments),
     element;
@@ -85,84 +149,67 @@ function ue(element_name){
 
 function modal(form_info){
     //тут ещё должна быть работа по скрытию перекрываемого содержимового и прочее
-    var modal_f = ue('frame', {
-			 x : '30%',
-			 y : '30%',
-			 width : '40%',
-			 height : '40%'
-		     }),
-    content_f = ue('frame', {
-		       x : '2%',
-		       y : '2%',
-		       width : '96%',
-		       height : '96%'
-		   }),
-    bg_i = ue('image', {
-		  x : '0%',
-		  y : '0%',
-		  width : '100%',
-		  height : '100%',
-		  source : require('shareg/images/brown_rect')
-	      }),
-    grey_i = ue('image', {
-		    x : '0%',
-		    y : '0%',
-		    width : '100%',
-		    height : '100%',
-		    opacity : '5%',
-		    source : require('shareg/images/grey')
-		});
+    var modal_f = new cframe({
+			     x : '0%',
+			     y : '0%',
+			     width : '100%',
+			     height : '100%'
+			 }),
+    content_f =  new cframe({
+			    x : '31%',
+			    y : '31%',
+			    width : '38%',
+			    height : '38%'
+			}),
+    bg_i = new cimage({
+		      x : '30%',
+		      y : '30%',
+		      width : '40%',
+		      height : '40%',
+		      source : require('shareg/images/brown_rect')
+		  }),
+    grey_i = new cimage({
+		       x : '0%',
+		       y : '0%',
+		       width : '100%',
+		       height : '100%',
+		       opacity : '5%',
+		       source : require('shareg/images/grey')
+		   });
     
-    comp.frame_add(0, grey_i.id);
-    comp.frame_add(0, modal_f.id);
-    comp.frame_add(modal_f.id, bg_i.id);
-    comp.frame_add(modal_f.id, content_f.id);
+    root_f.add(modal_f);
+    modal_f.add(grey_i);
+    modal_f.add(bg_i);
+    modal_f.add(content_f);
 
     modal_f.content = content_f;
-    modal_f.destroy = function(){
-	comp.frame_remove(grey_i.id);
-	grey_i.destroy();
-	comp.frame_remove(bg_i.id);
-	bg_i.destroy();
-	comp.frame_remove(content_f.id);
-	content_f.destroy();
-	comp.frame_remove(this.id);
-	comp.frame_destroy(this.id);
-    };
-
-    return modal_f;
+  
+    return modal_f; 
 }
 
 function element_action_menu(element){
-    var _modal = modal(),
-    delete_b = ue('button', {
-		      x : '0%',
-		      y : '0%',
-		      width : '100%',
-		      height : '30%',
-		      label : 'удалить',
-		      on_press : function(){
-			  element.container.obj.remove_by_obj(element);
-			  _modal.destroy();
-			  delete_b.destroy();
-			  change_b.destroy();
-		      }
-		  }),			    
-    change_b = ue('button', {
-		      x : '0%',
-		      y : '30%',
-		      width : '100%',
-		      height : '30%',
-		      label : 'изменить',
-		      on_press : function(){
-			  _modal.destroy();
-			  delete_b.destroy();
-			  change_b.destroy();
-		      }
-		  });
-
-    comp.frame_add(_modal.content.id, delete_b.id);
-    comp.frame_add(_modal.content.id, change_b.id);
+    var modal_f = modal();
+    modal_f.content.add(new cbutton({
+				       x : '0%',
+				       y : '0%',
+				       width : '100%',
+				       height : '30%',
+				       label : 'удалить',
+				       on_press : function(){
+					   element.container.obj.remove_by_obj(element);
+					   modal_f.destroy();
+				       }
+				   }));			    
+    modal_f.content.add(new cbutton({
+				       x : '0%',
+				       y : '30%',
+				       width : '100%',
+				       height : '30%',
+				       label : 'изменить',
+				       on_press : function(){
+					   modal_f.destroy();
+				       }
+				   }));
 }
 
 function element_build(element){
@@ -176,21 +223,21 @@ function tlelement(){
     var element;
     if(rorb == 1){
 	rorb = 0;
-	element = ue('image', {
-			 x : '0%',
-			 y : '0%',
-			 width : '50%',
-			 height : '100%',
-			 source : require('shareg/images/red')
-		     });
+	element = new cimage({
+				 x : '0%',
+				 y : '0%',
+				 width : '50%',
+				 height : '100%',
+				 source : require('shareg/images/red')
+			     });
     }else{
 	rorb = 1;
-	element = ue('image', {
-			 x : '50%',
-			 y : '0%',
-			 width : '50%',
-			 height : '100%',
-			 source : require('shareg/images/blue')
+	element = new cimage({
+				 x : '50%',
+				 y : '0%',
+				 width : '50%',
+				 height : '100%',
+				 source : require('shareg/images/blue')
 		     });
     }
     
@@ -218,46 +265,43 @@ var icon = {
 	function element_image(image){
 	    var element;
 	    
-	    element = ue('image', {
-			     x : '0%',
-			     y : '0%',
-			     width : '100%',
-			     height : '100%',
-			     source : image 
-			 });
+	    element = new cimage({
+				    x : '0%',
+				    y : '0%',
+				    width : '100%',
+				    height : '100%',
+				    source : image 
+				});
 	    element_build(element);
 
 	    return element;    
 	}
-	var _modal = modal(),
-	title_t = ue('text', {
-			 x : '0%',
-			 y : '0%',
-			 width : '100%',
-			 height : '30%',
-			 text : 'выберите цвет'
-		     }),
-	red_i = ue('image', {
-		       x : '0%',
-		       y : '30%',
-		       width : '100%',
-		       height : '30%',
-		       source : require('shareg/images/red')
-		   }),
-	blue_i = ue('image', {
-			x : '0%',
-			y : '60%',
-			width : '100%',
-			height : '30%',
-			source : require('shareg/images/blue')
-		    });
+	var modal_f = modal(),
+	title_t = new ctext({
+			       x : '0%',
+			       y : '0%',
+			       width : '100%',
+			       height : '30%',
+			       text : 'выберите цвет'
+			   }),
+	red_i = new cimage({
+			      x : '0%',
+			      y : '30%',
+			      width : '100%',
+			      height : '30%',
+			      source : require('shareg/images/red')
+			  }),
+	blue_i = new cimage({
+			       x : '0%',
+			       y : '60%',
+			       width : '100%',
+			       height : '30%',
+			       source : require('shareg/images/blue')
+			   });
 
 	function _choose_finalizer(image){
-	    _modal.destroy();
-	    title_t.destroy();
-	    red_i.destroy();
-	    blue_i.destroy();	    
 	    on_create_cb(element_image(image));
+	    modal_f.destroy();
 	}
 	comp.event_register(red_i.id, 'pointer_up', function(){
 				_choose_finalizer(require('shareg/images/red'));
@@ -266,9 +310,9 @@ var icon = {
 				_choose_finalizer(require('shareg/images/blue'));
 			    });
 
-	comp.frame_add(_modal.content.id, title_t.id);
-	comp.frame_add(_modal.content.id, red_i.id);
-	comp.frame_add(_modal.content.id, blue_i.id); 		 
+	modal_f.content.add(title_t);
+	modal_f.content.add(red_i);
+	modal_f.content.add(blue_i); 		 
     }
 };
 
@@ -277,48 +321,45 @@ var etext = {
 	function element_text(text){
 	    var element;
 	    
-	    element = ue('text', {
-			     x : '0%',
-			     y : '0%',
-			     width : '100%',
-			     height : '100%',
-			     text : text 
-			 });
+	    element = new ctext({
+				    x : '0%',
+				    y : '0%',
+				    width : '100%',
+				    height : '100%',
+				    text : text 
+				});
 	    element_build(element);
 
 	    return element;    
 	}
-	var _modal = modal(),
-	title_t = ue('text', {
-			 x : '0%',
-			 y : '0%',
-			 width : '100%',
-			 height : '30%',
-			 text : 'создание текста'
-		     }),
-	content_e = ue('entry', {
-			   x : '0%',
-			   y : '30%',
-			   width : '100%',
-			   height : '30%'
-		       }),
-	finish_b = ue('button', {
-			  x : '0%',
-			  y : '60%',
-			  width : '100%',
-			  height : '30%',
-			  label : 'закончить',
-			  on_press : function(){
-			      _modal.destroy();
-			      title_t.destroy();
-			      finish_b.destroy();
-			      on_create_cb(element_text((comp.entry_get_control(content_e.id)).get_value()));
-			      content_e.destroy();
+	var modal_f = modal(),
+	title_t = new ctext({
+				x : '0%',
+				y : '0%',
+				width : '100%',
+				height : '30%',
+				text : 'создание текста'
+			    }),
+	content_e = new centry({
+				   x : '0%',
+				   y : '30%',
+				   width : '100%',
+				   height : '30%'
+			       }),
+	finish_b = new cbutton({
+				   x : '0%',
+				   y : '60%',
+				   width : '100%',
+				   height : '30%',
+				   label : 'закончить',
+				   on_press : function(){
+				       on_create_cb(element_text(content_e.control.get_value()));
+				       modal_f.destroy();
 			  }
 		      });
-	comp.frame_add(_modal.content.id, title_t.id);
-	comp.frame_add(_modal.content.id, content_e.id);
-	comp.frame_add(_modal.content.id, finish_b.id); 		 
+	modal_f.content.add(title_t);
+	modal_f.content.add(content_e);
+	modal_f.content.add(finish_b); 		 
     }
 };
 
