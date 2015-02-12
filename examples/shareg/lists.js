@@ -133,6 +133,44 @@ function modal(form_info){
     return modal_f;
 }
 
+function element_action_menu(element){
+    var _modal = modal(),
+    delete_b = ue('button', {
+		      x : '0%',
+		      y : '0%',
+		      width : '100%',
+		      height : '30%',
+		      label : 'удалить',
+		      on_press : function(){
+			  element.container.obj.remove_by_obj(element);
+			  _modal.destroy();
+			  delete_b.destroy();
+			  change_b.destroy();
+		      }
+		  }),			    
+    change_b = ue('button', {
+		      x : '0%',
+		      y : '30%',
+		      width : '100%',
+		      height : '30%',
+		      label : 'изменить',
+		      on_press : function(){
+			  _modal.destroy();
+			  delete_b.destroy();
+			  change_b.destroy();
+		      }
+		  });
+
+    comp.frame_add(_modal.content.id, delete_b.id);
+    comp.frame_add(_modal.content.id, change_b.id);
+}
+
+function element_build(element){
+    comp.event_register(element.id, 'pointer_up', function(){
+			    element_action_menu(element);
+			});
+}
+
 var rorb = 0;
 function tlelement(){
     var element;
@@ -155,37 +193,8 @@ function tlelement(){
 			 source : require('shareg/images/blue')
 		     });
     }
-    comp.event_register(element.id, 'pointer_up', function(){
-			    var _modal = modal(),
-			    delete_b = ue('button', {
-					      x : '0%',
-					      y : '0%',
-					      width : '100%',
-					      height : '30%',
-					      label : 'удалить',
-					      on_press : function(){
-						  element.container.obj.remove_by_obj(element);
-						  _modal.destroy();
-						  delete_b.destroy();
-						  change_b.destroy();
-					      }
-					}),			    
-			    change_b = ue('button', {
-					      x : '0%',
-					      y : '30%',
-					      width : '100%',
-					      height : '30%',
-					      label : 'изменить',
-					      on_press : function(){
-						  _modal.destroy();
-						  delete_b.destroy();
-						  change_b.destroy();
-					      }
-					});
-
-			    comp.frame_add(_modal.content.id, delete_b.id);
-			    comp.frame_add(_modal.content.id, change_b.id);
-			});
+    
+    element_build(element);
 
     return element;
 };
@@ -194,6 +203,136 @@ function telement(name, info){
     var element;
 
     element = ue(name, info);
+
+    return element;
+}
+
+function eimage(info){
+    var element;
+
+    return element;
+}
+
+var icon = {
+    form : function(on_create_cb){
+	function element_image(image){
+	    var element;
+	    
+	    element = ue('image', {
+			     x : '0%',
+			     y : '0%',
+			     width : '100%',
+			     height : '100%',
+			     source : image 
+			 });
+	    element_build(element);
+
+	    return element;    
+	}
+	var _modal = modal(),
+	title_t = ue('text', {
+			 x : '0%',
+			 y : '0%',
+			 width : '100%',
+			 height : '30%',
+			 text : 'выберите цвет'
+		     }),
+	red_i = ue('image', {
+		       x : '0%',
+		       y : '30%',
+		       width : '100%',
+		       height : '30%',
+		       source : require('shareg/images/red')
+		   }),
+	blue_i = ue('image', {
+			x : '0%',
+			y : '60%',
+			width : '100%',
+			height : '30%',
+			source : require('shareg/images/blue')
+		    });
+
+	function _choose_finalizer(image){
+	    _modal.destroy();
+	    title_t.destroy();
+	    red_i.destroy();
+	    blue_i.destroy();	    
+	    on_create_cb(element_image(image));
+	}
+	comp.event_register(red_i.id, 'pointer_up', function(){
+				_choose_finalizer(require('shareg/images/red'));
+			    });
+	comp.event_register(blue_i.id, 'pointer_up', function(){
+				_choose_finalizer(require('shareg/images/blue'));
+			    });
+
+	comp.frame_add(_modal.content.id, title_t.id);
+	comp.frame_add(_modal.content.id, red_i.id);
+	comp.frame_add(_modal.content.id, blue_i.id); 		 
+    }
+};
+
+var etext = {
+    form : function(on_create_cb){
+	function element_text(text){
+	    var element;
+	    
+	    element = ue('text', {
+			     x : '0%',
+			     y : '0%',
+			     width : '100%',
+			     height : '100%',
+			     text : text 
+			 });
+	    element_build(element);
+
+	    return element;    
+	}
+	var _modal = modal(),
+	title_t = ue('text', {
+			 x : '0%',
+			 y : '0%',
+			 width : '100%',
+			 height : '30%',
+			 text : 'создание текста'
+		     }),
+	content_e = ue('entry', {
+			   x : '0%',
+			   y : '30%',
+			   width : '100%',
+			   height : '30%'
+		       }),
+	finish_b = ue('button', {
+			  x : '0%',
+			  y : '60%',
+			  width : '100%',
+			  height : '30%',
+			  label : 'закончить',
+			  on_press : function(){
+			      _modal.destroy();
+			      title_t.destroy();
+			      finish_b.destroy();
+			      on_create_cb(element_text((comp.entry_get_control(content_e.id)).get_value()));
+			      content_e.destroy();
+			  }
+		      });
+	comp.frame_add(_modal.content.id, title_t.id);
+	comp.frame_add(_modal.content.id, content_e.id);
+	comp.frame_add(_modal.content.id, finish_b.id); 		 
+    }
+};
+
+function evideo(info){
+    var element;
+
+    //description
+    //icon    
+
+    return element;    
+}
+
+function elist(info){
+    var element;
 
     return element;
 }
@@ -317,24 +456,70 @@ exports.init = function(_cn){
 	       list.insert(2, tlelement());
 	       list.remove(2);
 	       list.insert(2, tlelement());
-	       list.insert(3, tlelement());
-	       list.remove(3);
-	       list.remove(2);
+//	       list.insert(3, evideo());
+//	       list.remove(3);
+//	       list.remove(2);
 //	       list.remove(3);
 
 	       comp.frame_add(0, list.id);
 
-	       list.insert(2, telement('button', {
+	       list.insert(3, telement('button', {
 					   x : '0%',
 					   y : '0%',
 					   width : '100%',
 					   height : '100%',
 					   label : 'добавить',
 					   on_press : function(){
-					       list.insert(0, tlelement());
-					   }
+					       var _modal = modal(),
+					       text_b = ue('button', {
+							       x : '0%',
+							       y : '0%',
+							       width : '100%',
+							       height : '30%',
+							       label : 'текст',
+							       on_press : function(){
+								   _modal.destroy();
+								   text_b.destroy();
+								   list_b.destroy();
+								   etext.form(function(element){
+										  list.insert(0, element);
+									      });		
+							       }
+							     }),			    
+					       icon_b = ue('button', {
+								 x : '0%',
+								 y : '30%',
+								 width : '100%',
+								 height : '30%',
+								 label : 'иконку',
+								 on_press : function(){
+								     _modal.destroy();
+								     text_b.destroy();
+								     list_b.destroy();
+								     icon.form(function(element){
+										  list.insert(0, element);
+									      });
+								 }
+							     }),
+					       list_b = ue('button', {
+								 x : '0%',
+								 y : '60%',
+								 width : '100%',
+								 height : '30%',
+								 label : 'список',
+								 on_press : function(){
+								     _modal.destroy();
+								     text_b.destroy();
+								     list_b.destroy();
+								     elist.form();
+								 }
+							     });
+					       
+					       comp.frame_add(_modal.content.id, text_b.id);
+					       comp.frame_add(_modal.content.id, icon_b.id);
+					       comp.frame_add(_modal.content.id, list_b.id); 								} 
 				       }));
-	       list.insert(3, telement('button', {
+	       list.insert(4, telement('button', {
 					   x : '0%',
 					   y : '0%',
 					   width : '100%',
