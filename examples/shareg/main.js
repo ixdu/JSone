@@ -41,6 +41,7 @@
  */
 
 var linker = require('caravan/init'),
+shared = require('shareg/shared'),
 cn,
 local_services = {};
 
@@ -48,7 +49,8 @@ exports.init = function(_caravan){
     cn = _caravan;
     
     cn.on('state_start', function(sprout, stack, image){
-	      require('caravan/parts/ui');
+	      shared.set('ui', new require('caravan/parts/ui')());
+
 	      //loading lists if there is no presaved image(cold application start)
 	      if(typeof image == 'undefined'){
 		  local_services.lists = linker.get('shareg/lists');

@@ -15,7 +15,8 @@
 	    "grey" : "caravan/examples/shareg/images/grey.png",
 	    "brown_rect" : "caravan/examples/shareg/images/brown_rect.svg"
 	},
-	
+
+	"shared" : "caravan/examples/shareg/shared.js",
 	"main" : "caravan/examples/shareg/main.js",
         "lists" : "caravan/examples/shareg/lists.js",
 	"player" : "caravan/examples/shareg/player.js"	
