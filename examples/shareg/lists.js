@@ -81,6 +81,10 @@ function ue(element_name){
     return element;
 }
 
+function ui_menu(){
+    
+}
+
 function modal(form_info){
     //тут ещё должна быть работа по скрытию перекрываемого содержимового и прочее
     var modal_f = new ui.frame({

@@ -55,6 +55,8 @@ exports.init = function(_caravan){
 	      if(typeof image == 'undefined'){
 		  local_services.lists = linker.get('shareg/lists');
 		  local_services.lists.state_start(image).run();
+		  local_services.main_surface = linker.get('shareg/surface');
+		  local_services.main_surface.state_start(image).run();
 	      } else {
 		  //loading services with presaved images
 		  for(key in image.services){
