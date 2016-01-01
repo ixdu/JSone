@@ -81,3 +81,24 @@ saray.put(path, object);
  */
 caravansaray.add(path, object);
 
+
+//Пример как найти что-нибудь и скачать
+caravan.find_thing("fifth element.avi", function(link){
+		       link.download("videos/fifth element.avi");
+});
+
+//Пример как послать что-нибудь, даже если никого нет дома
+caravan.find_path("Мой лучший друг", function(link){
+		      if(link)
+			  link.upload("videos/fifth element.avi");
+		      else 
+			  caravan.find_caravan("Мой лучший друг", function(caravan){
+						   caravan.add("Мой лучший друг", "videos/fifth element");
+					       });
+});
+
+//Пример как положить что-нибудь куда-нибудь до востребования
+
+caravan.find_saray("video", "2gb", function(saray){
+		      saray.upload("videos/fifth element.avi"); 
+		   });

@@ -54,3 +54,21 @@
 				       }
 			             }));
     vmenu.set_page(menu_page);
+
+/*
+ * Проба другого api
+ * 
+ */
+
+page('main',
+     menu({ position : 'left', width : '2i' },
+	  click({ label : 'news', onClick : { page : 'news'} }),
+	  click({ label : 'contacts', selected : true, onClick : { page : 'contacts' } })
+	 ),
+     page({ name : 'news' }, 
+	  label({ text : "this is news"})),
+     page({ name : 'contacts' }, 
+	  label({ text : "DataUnion community" }),
+	  label({ text : "Ekaterinburg sity" })
+	 )
+    );
