@@ -1,0 +1,11 @@
+{
+    "caravan" : {
+	"type" : "module",
+	"preload" : false,
+	"inline" : true,
+
+	"mq" : "caravan/mq.js",
+	"service_loader" : "caravan/service_loader.js",
+	"init" : "caravan/init.js"
+    }
+}
